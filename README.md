@@ -12,7 +12,7 @@
 |------|------|
 | 后端 | Django 5 + Django REST Framework + Django Channels |
 | 前端 | Vue 3 + Vite + Element Plus + Pinia |
-| 数据库 | SQLite（开发）/ PostgreSQL 16（生产） |
+| 数据库 | MySQL 8.0 |
 | 实时通讯 | WebSocket（Channels + Redis） |
 | 对象存储 | MinIO |
 | 容器化 | Docker + Docker Compose |
@@ -20,18 +20,22 @@
 ## 快速开始
 
 ```bash
-# 后端
+# 1. 初始化 MySQL 数据库（仅首次）
+mysql -u root -p -e "CREATE DATABASE swapcampus CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 2. 后端
 cd backend
+cp .env.example .env  # 填写数据库连接信息
 python -m venv venv && source venv/bin/activate
 pip install -r requirements/dev.txt
 python manage.py migrate
 python manage.py runserver
 
-# 前端
+# 3. 前端
 cd frontend
 npm install && npm run dev
 
-# Docker 部署
+# 4. Docker 部署
 docker compose -f docker/docker-compose.yml up -d
 ```
 
