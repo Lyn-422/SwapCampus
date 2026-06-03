@@ -22,7 +22,7 @@ SwapCampus 是北京林业大学校园闲置物品交易平台，为《软件工
 | UI 组件库 | Element Plus | 用户端 + 管理端组件 |
 | 状态管理 | Pinia | Vue 3 官方推荐 |
 | HTTP 客户端 | Axios | 拦截器 + 错误处理 |
-| 数据库 | SQLite（开发）/ PostgreSQL 16（生产） | 开发零配置，生产高性能 |
+| 数据库 | MySQL 8.0 | 团队均有使用经验，Django ORM 适配 |
 | 对象存储 | MinIO | 本地 S3 兼容存储 |
 | 容器化 | Docker + Docker Compose | 一键部署 |
 | 测试 | pytest + pytest-django / Vitest | 单元测试覆盖率 ≥ 60% |
@@ -135,7 +135,7 @@ SwapCampus/
 ├── docker/                         # 容器化配置
 │   ├── Dockerfile.backend          # Django 后端镜像
 │   ├── Dockerfile.frontend         # Nginx + 前端构建产物
-│   ├── docker-compose.yml          # 编排（Django + PostgreSQL + Redis + MinIO + Nginx）
+│   ├── docker-compose.yml          # 编排（Django + MySQL + Redis + MinIO + Nginx）
 │   └── nginx.conf                  # Nginx 反向代理配置
 │
 ├── docs/                           # 课程设计产出文档（D-01 ~ D-12）
@@ -352,6 +352,22 @@ cd frontend && npm run test:unit
 
 ## 环境搭建快速开始
 
+### 前置要求
+- Python 3.12+
+- Node.js 18+
+- MySQL 8.0+（需提前安装并启动服务）
+- Redis（Channels 依赖，Docker 部署时自动提供）
+
+### 数据库初始化（每位成员首次克隆后执行一次）
+```sql
+-- 在 MySQL 中执行（用 root 或管理员账号登录）
+CREATE DATABASE swapcampus CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'swapcampus'@'localhost' IDENTIFIED BY 'your_password_here';
+GRANT ALL PRIVILEGES ON swapcampus.* TO 'swapcampus'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+### 本地开发
 ```bash
 # 1. 克隆仓库
 git clone git@github.com:5intro/SwapCampus.git
@@ -359,6 +375,7 @@ cd SwapCampus
 
 # 2. 后端
 cd backend
+cp .env.example .env   # 复制环境变量模版，填写你的 MySQL 密码
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements/dev.txt
