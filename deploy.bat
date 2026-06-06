@@ -49,8 +49,13 @@ echo   OK
 
 :: 5. 重启后端
 echo [5/5] 重启后端服务...
+:: 关闭旧进程
 taskkill /fi "WINDOWTITLE eq waitress*" /f 2>nul
+taskkill /fi "WINDOWTITLE eq uvicorn*" /f 2>nul
+:: 启动 WSGI（HTTP API）
 start "waitress" cmd /c "cd /d %~dp0backend && call venv\Scripts\activate.bat && waitress-serve --port=8000 config.wsgi:application"
+:: 启动 ASGI（WebSocket）
+start "uvicorn" cmd /c "cd /d %~dp0backend && call venv\Scripts\activate.bat && uvicorn config.asgi:application --host 127.0.0.1 --port 8001"
 echo   OK
 
 echo.

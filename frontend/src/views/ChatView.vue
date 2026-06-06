@@ -21,7 +21,7 @@ let reconnectTimer = null
 
 onMounted(async () => {
   await loadConversation()
-  connectWebSocket()
+  try { connectWebSocket() } catch {}
 
   // Poll as fallback
   pollTimer = setInterval(loadConversation, 8000)
@@ -50,8 +50,15 @@ function connectWebSocket() {
     ws.close()
   }
 
-  const wsUrl = `ws://${window.location.host}/ws/chat/${route.params.id}/?token=${token}`
-  ws = new WebSocket(wsUrl)
+  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+  const wsUrl = `${protocol}://${window.location.host}/ws/chat/${route.params.id}/?token=${token}`
+  try {
+    ws = new WebSocket(wsUrl)
+  } catch {
+    // WebSocket not supported or blocked (e.g., HTTPS page using ws://)
+    // REST polling still works as fallback
+    return
+  }
 
   ws.onopen = () => {
     // 连接成功后发送 read_conversation 标记已读
