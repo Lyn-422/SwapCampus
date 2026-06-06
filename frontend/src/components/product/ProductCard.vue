@@ -50,7 +50,9 @@ function goDetail() {
       </el-tag>
 
       <div v-if="product.status !== 'active'" class="status-overlay">
-        <el-tag type="info" size="large" effect="plain">已售出</el-tag>
+        <el-tag type="info" size="large" effect="plain">
+          {{ product.status === 'sold' ? '已售出' : product.status === 'hidden' ? '已下架' : '已预定' }}
+        </el-tag>
       </div>
     </div>
 

@@ -15,6 +15,7 @@ const conversation = ref(null)
 const messages = ref([])
 let pollTimer = null
 let ws = null
+let reconnectTimer = null
 
 onMounted(async () => {
   await loadConversation()
@@ -35,8 +36,7 @@ onMounted(async () => {
     }
 
     ws.onclose = () => {
-      // reconnect after 3 seconds if page is still active
-      setTimeout(() => {
+      reconnectTimer = setTimeout(() => {
         if (document.visibilityState === 'visible') {
           loadConversation()
         }
@@ -54,6 +54,7 @@ onMounted(async () => {
 onUnmounted(() => {
   if (ws) ws.close()
   if (pollTimer) clearInterval(pollTimer)
+  if (reconnectTimer) clearTimeout(reconnectTimer)
 })
 
 async function loadConversation() {

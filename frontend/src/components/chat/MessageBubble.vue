@@ -9,28 +9,27 @@ defineProps({
 </script>
 
 <template>
-  <div class="message-bubble" :class="{ 'message-mine': isMine }">
-    <el-avatar
-      v-if="!isMine"
-      :size="32"
-      class="msg-avatar"
-    >
+  <!-- 对方消息：[头像] [消息] -->
+  <div v-if="!isMine" class="message-bubble">
+    <el-avatar :size="32" class="msg-avatar">
       {{ message.sender_name?.[0] || '?' }}
     </el-avatar>
-
     <div class="msg-body">
-      <div class="msg-header" v-if="!isMine">
+      <div class="msg-header">
         <span class="msg-sender">{{ message.sender_name }}</span>
       </div>
       <div class="msg-content">{{ message.content }}</div>
       <div class="msg-time">{{ formatTime(message.created_at) }}</div>
     </div>
+  </div>
 
-    <el-avatar
-      v-if="isMine"
-      :size="32"
-      class="msg-avatar"
-    >
+  <!-- 自己消息：[消息] [头像] -->
+  <div v-else class="message-bubble message-mine">
+    <div class="msg-body">
+      <div class="msg-content">{{ message.content }}</div>
+      <div class="msg-time">{{ formatTime(message.created_at) }}</div>
+    </div>
+    <el-avatar :size="32" class="msg-avatar">
       {{ message.sender_name?.[0] || '我' }}
     </el-avatar>
   </div>
@@ -45,7 +44,7 @@ defineProps({
 }
 
 .message-mine {
-  flex-direction: row-reverse;
+  justify-content: flex-end;
 }
 
 .msg-avatar {
@@ -54,10 +53,6 @@ defineProps({
 
 .msg-body {
   max-width: 65%;
-}
-
-.message-mine .msg-body {
-  text-align: right;
 }
 
 .msg-header {

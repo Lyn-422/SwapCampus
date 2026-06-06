@@ -48,7 +48,10 @@ pip install -r requirements/dev.txt
 # 5. 数据库迁移（首次）
 python manage.py migrate
 
-# 6. 启动开发服务器
+# 6. 初始化种子数据（分类、标签）
+python manage.py seed_products
+
+# 7. 启动开发服务器
 python manage.py runserver
 ```
 
