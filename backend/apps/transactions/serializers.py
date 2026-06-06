@@ -30,8 +30,15 @@ class OrderListSerializer(serializers.ModelSerializer):
             "status_display",
             "meet_time",
             "meet_location",
+            "cancel_reason",
+            "cancel_by",
             "created_at",
         ]
+
+    def get_cancel_by(self, obj) -> str | None:
+        if obj.cancel_by:
+            return obj.cancel_by.get_display_name()
+        return None
 
     def get_buyer(self, obj) -> dict:
         return {"id": str(obj.buyer.id), "nickname": obj.buyer.get_display_name()}

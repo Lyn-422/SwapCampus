@@ -593,6 +593,7 @@ python -m venv venv
 source venv/bin/activate             # Windows: venv\Scripts\activate
 pip install -r requirements/dev.txt
 python manage.py migrate
+python manage.py seed_products          # 初始化分类和标签数据
 python manage.py runserver           # 开发用 WSGI；如需 WebSocket 功能使用 Daphne/uvicorn
 
 # 3. 前端
@@ -651,6 +652,36 @@ waitress-serve --port=8000 config.wsgi:application
 | 测试 | D10-D11 | 集成+性能+安全测试 | D-06 |
 | 部署 | D12 | 容器化+用户手册 | D-07, D-08 |
 | 验收 | D13-D14 | 答辩+归档 | D-09, D-10, D-11, T-04, T-05 |
+
+---
+
+## 更新日志
+
+### 2026-06-06 — Bug 修复与完善
+
+**种子数据**
+- 新增 `python manage.py seed_products` 命令，初始化 7 大类 + 20 子类的二级分类体系，5 个标签（去除了跟成色重复的"几乎全新""九成新""八成新""功能正常""有瑕疵"）
+- 文件：`apps/products/management/commands/seed_products.py`
+
+**订单筛选修复**（`apps/transactions/views.py`）
+- `OrderViewSet.get_queryset()` 新增 `status` 查询参数过滤，支持逗号分隔多状态。修复了全部/待确认/进行中/已完成 Tab 切换无效的问题。
+
+**取消/拒绝原因**（`apps/transactions/views.py`、`serializers.py`、`frontend/src/views/MyOrders.vue`）
+- 后端 `cancel`/`reject` action 统一读取 `reason` 参数，`OrderListSerializer` 新增 `cancel_reason` 和 `cancel_by` 字段
+- 前端订单卡片新增红色提示条展示取消人 + 原因
+
+**消息气泡布局**（`frontend/src/components/chat/MessageBubble.vue`）
+- 修正为：对方 `[头像][消息]`，自己 `[消息][头像]`
+
+**离开聊天弹"未找到"**（`frontend/src/views/ChatView.vue`）
+- WebSocket close 的 `setTimeout` 未清除导致 3 秒后发无效请求 → 404。新增 `reconnectTimer` 并在 `onUnmounted` 中 clearTimeout
+
+**面交确认码**（`frontend/src/api/transactions.js`、`frontend/src/views/MyOrders.vue`）
+- 修正 API 路径：`generateConfirmCode` 改用 `GET .../face_confirm/`，`verifyConfirmCode` 改用 `POST .../face_confirm/`
+- 确认码生成后持久显示在订单卡片上（绿色大号字体、可选中复制），支持页面刷新后自动恢复、卖家可重新生成
+
+**商品状态标签**（`frontend/src/components/product/ProductCard.vue`）
+- 非 active 状态之前统一显示"已售出"，修正为按实际状态区分：sold→已售出、hidden→已下架、reserved→已预定
 
 ---
 
