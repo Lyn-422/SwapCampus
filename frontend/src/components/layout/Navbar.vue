@@ -34,7 +34,7 @@ async function fetchUnreadNotifs() {
   try {
     const res = await getNotifications({ page_size: 1, is_read: false })
     const data = res.data.data || res.data
-    unreadNotifCount.value = data.pagination?.total || data.count || 0
+    unreadNotifCount.value = res.data.pagination?.total || data.length || 0
   } catch {}
 }
 

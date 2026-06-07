@@ -68,7 +68,7 @@ async function search() {
     const res = await getProducts(params)
     const data = res.data.data || res.data
     products.value = data.results || data
-    total.value = data.pagination?.total || data.count || 0
+    total.value = res.data.pagination?.total || data.length || 0
   } catch {
     products.value = []
   } finally {
