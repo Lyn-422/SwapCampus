@@ -20,7 +20,6 @@ const auth = useAuthStore()
 const activeTab = ref('all')
 const orders = ref([])
 const loading = ref(false)
-const confirmCodes = ref({})  // { orderId: '123456' }
 
 // Review dialog
 const reviewDialog = ref(false)
@@ -51,18 +50,6 @@ async function loadOrders() {
     const res = await getOrders(params)
     const data = res.data.data || res.data
     orders.value = data.results || data
-    // 为所有 face_confirm 状态的订单获取面交码
-    for (const order of orders.value) {
-      if (order.status === 'face_confirm' && isSeller(order) && !confirmCodes.value[order.id]) {
-        try {
-          const codeRes = await generateConfirmCode(order.id)
-          const codeData = codeRes.data.data || codeRes.data
-          if (codeData.confirm_code) {
-            confirmCodes.value[order.id] = codeData.confirm_code
-          }
-        } catch {}
-      }
-    }
   } catch {
     orders.value = []
   } finally {
@@ -118,8 +105,8 @@ async function handleGenerateCode(order) {
   try {
     const res = await generateConfirmCode(order.id)
     const data = res.data.data || res.data
-    confirmCodes.value[order.id] = data.confirm_code
-    loadOrders()
+    order.face_confirm_code = data.confirm_code
+    order.status = 'face_confirm'
   } catch {}
 }
 
@@ -261,14 +248,15 @@ async function submitReview() {
               生成面交码
             </el-button>
 
-            <!-- Seller: face_confirm, show code -->
+            <!-- Seller: show face confirm code (persists across page switches and after buyer confirms) -->
             <div
-              v-if="isSeller(order) && order.status === 'face_confirm' && confirmCodes[order.id]"
+              v-if="isSeller(order) && (order.status === 'face_confirm' || order.status === 'completed') && order.face_confirm_code"
               class="face-code-display"
             >
               <span class="face-code-label">面交确认码</span>
-              <span class="face-code-value">{{ confirmCodes[order.id] }}</span>
+              <span class="face-code-value" :class="{ 'code-used': order.status === 'completed' }">{{ order.face_confirm_code }}</span>
               <el-button
+                v-if="order.status === 'face_confirm'"
                 size="small"
                 text
                 type="primary"
@@ -436,6 +424,11 @@ async function submitReview() {
   letter-spacing: 4px;
   font-family: 'Courier New', monospace;
   user-select: all;
+}
+
+.face-code-value.code-used {
+  color: #9e9e9e;
+  text-decoration: line-through;
 }
 
 .review-form label {
