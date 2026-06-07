@@ -18,6 +18,7 @@ from apps.transactions.serializers import (
     ReviewSerializer,
 )
 from apps.transactions.services import create_face_confirm, create_review, transition_order, verify_face_confirm
+from apps.users.services import create_notification
 from core.utils import build_success_response
 
 
@@ -74,7 +75,14 @@ class OrderViewSet(
         return Response(build_success_response(serializer.data))
 
     def perform_create(self, serializer):
-        serializer.save()
+        order = serializer.save()
+        create_notification(
+            order.seller, "new_order",
+            "新订单",
+            f"{self.request.user.get_display_name()} 购买了《{order.product.title}》",
+            related_order=order, related_product=order.product,
+        )
+        return order
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
