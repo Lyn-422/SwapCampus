@@ -50,7 +50,8 @@ function connectWebSocket() {
     ws.close()
   }
 
-  const wsUrl = `ws://${window.location.host}/ws/chat/${route.params.id}/?token=${token}`
+  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+  const wsUrl = `${protocol}://${window.location.host}/ws/chat/${route.params.id}/?token=${token}`
   ws = new WebSocket(wsUrl)
 
   ws.onopen = () => {
