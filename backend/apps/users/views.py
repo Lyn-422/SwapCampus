@@ -204,7 +204,11 @@ class NotificationViewSet(
     lookup_field = "id"
 
     def get_queryset(self):
-        return Notification.objects.filter(recipient=self.request.user)
+        qs = Notification.objects.filter(recipient=self.request.user)
+        is_read = self.request.query_params.get("is_read")
+        if is_read is not None:
+            qs = qs.filter(is_read=is_read.lower() in ("true", "1", "yes"))
+        return qs
 
     @action(detail=True, methods=["post"])
     def read(self, request, id=None):

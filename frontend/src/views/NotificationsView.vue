@@ -1,11 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getNotifications, markRead, markAllRead } from '@/api/notifications'
+import { useNotificationsStore } from '@/stores/notifications'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { formatDateTime } from '@/utils/format'
 
 const router = useRouter()
+const notifStore = useNotificationsStore()
 const notifications = ref([])
 const loading = ref(false)
 
@@ -47,6 +49,7 @@ async function handleClick(notif) {
     try {
       await markRead(notif.id)
       notif.is_read = true
+      notifStore.decrementUnread()
     } catch {}
   }
   if (notif.related_order) {
@@ -60,6 +63,7 @@ async function handleMarkAll() {
   try {
     await markAllRead()
     notifications.value.forEach(n => n.is_read = true)
+    notifStore.clearUnread()
     ElMessage.success('全部标记为已读')
   } catch {}
 }

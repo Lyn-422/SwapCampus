@@ -1,7 +1,7 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
-import { getNotifications } from '@/api/notifications'
+import { useNotificationsStore } from '@/stores/notifications'
 import { ElMessage } from 'element-plus'
 import { Search, Bell } from '@element-plus/icons-vue'
 import { ref, onMounted, onUnmounted } from 'vue'
@@ -9,34 +9,26 @@ import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
 const chat = useChatStore()
+const notifStore = useNotificationsStore()
 const router = useRouter()
 const searchKeyword = ref('')
 const showMobileMenu = ref(false)
-const unreadNotifCount = ref(0)
 let pollTimer = null
-let notifTimer = null
 
 onMounted(() => {
   if (auth.isLoggedIn) {
     chat.fetchConversations()
-    fetchUnreadNotifs()
-    pollTimer = setInterval(() => chat.fetchConversations(), 15000)
-    notifTimer = setInterval(fetchUnreadNotifs, 30000)
+    notifStore.fetchUnreadCount()
+    pollTimer = setInterval(() => {
+      chat.fetchConversations()
+      notifStore.fetchUnreadCount()
+    }, 30000)
   }
 })
 
 onUnmounted(() => {
   if (pollTimer) clearInterval(pollTimer)
-  if (notifTimer) clearInterval(notifTimer)
 })
-
-async function fetchUnreadNotifs() {
-  try {
-    const res = await getNotifications({ page_size: 1, is_read: false })
-    const data = res.data.data || res.data
-    unreadNotifCount.value = res.data.pagination?.total || data.length || 0
-  } catch {}
-}
 
 function goSearch() {
   if (searchKeyword.value.trim()) {
@@ -96,8 +88,8 @@ function logout() {
             <el-icon><component :is="Bell" /></el-icon>
             <span>通知</span>
             <el-badge
-              v-if="unreadNotifCount > 0"
-              :value="unreadNotifCount"
+              v-if="notifStore.unreadCount > 0"
+              :value="notifStore.unreadCount"
               class="unread-badge"
             />
           </el-menu-item>
