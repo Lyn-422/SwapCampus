@@ -22,7 +22,15 @@ const categoryId = ref('')
 const condition = ref('')
 const minPrice = ref('')
 const maxPrice = ref('')
-const sortBy = ref('-created_at')
+const sortBy = ref('newest')
+
+// sortBy value mapping: frontend key → backend sort_by parameter
+const sortMap = {
+  'newest': 'newest',
+  'price_asc': 'price_asc',
+  'price_desc': 'price_desc',
+  'popular': 'popular',
+}
 
 onMounted(async () => {
   keyword.value = route.query.q || ''
@@ -47,7 +55,7 @@ async function search() {
       page: currentPage.value,
       page_size: pageSize,
       status: 'active',
-      ordering: sortBy.value,
+      sort_by: sortMap[sortBy.value],
     }
     if (keyword.value.trim()) params.search = keyword.value.trim()
     if (categoryId.value) params.category = categoryId.value
@@ -139,10 +147,10 @@ function clearFilters() {
           <div class="filter-group">
             <label>排序</label>
             <el-select v-model="sortBy" style="width: 100%" @change="handleFilterChange">
-              <el-option label="最新发布" value="-created_at" />
-              <el-option label="价格低→高" value="price" />
-              <el-option label="价格高→低" value="-price" />
-              <el-option label="最多浏览" value="-view_count" />
+              <el-option label="最新发布" value="newest" />
+              <el-option label="价格低→高" value="price_asc" />
+              <el-option label="价格高→低" value="price_desc" />
+              <el-option label="最多浏览" value="popular" />
             </el-select>
           </div>
         </el-card>

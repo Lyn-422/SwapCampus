@@ -1,6 +1,7 @@
 """站内通讯 REST API 视图."""
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db.models import Count, Q, QuerySet
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import mixins, status, viewsets
@@ -90,7 +91,10 @@ class ConversationViewSet(
         participant_id = serializer.validated_data.pop("participant_id")
         product = serializer.validated_data.get("product")
         user = self.request.user
-        other = User.objects.get(id=participant_id)
+        try:
+            other = User.objects.get(id=participant_id)
+        except User.DoesNotExist:
+            raise ValidationError({"participant_id": "指定用户不存在"})
 
         # 查找已有会话（不限定 product，避免创建重复会话）
         existing = (

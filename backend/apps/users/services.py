@@ -44,15 +44,14 @@ def add_credit_record(
     Returns:
         新创建的 CreditRecord 实例
     """
-    # 锁定用户行，计算新积分
+    # 锁定用户行，计算新积分（在同一行锁内读写，避免并发覆盖）
     locked_user = User.objects.select_for_update().get(pk=user.pk)
     new_score = locked_user.credit_score + change
-    # 积分下限 0（信用分不会变为负数）
     if new_score < 0:
         new_score = 0
+    locked_user.credit_score = new_score
+    locked_user.save(update_fields=["credit_score"])
 
-    # 同时更新用户积分和创建记录
-    User.objects.filter(pk=user.pk).update(credit_score=new_score)
     record = CreditRecord.objects.create(
         user=user,
         change=change,
