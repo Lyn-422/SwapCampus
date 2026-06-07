@@ -177,17 +177,18 @@ def generate_face_confirm_code() -> str:
 @db_transaction.atomic
 def create_face_confirm(order: Order, created_by) -> FaceConfirm:
     """生成面交确认码（卖家操作）."""
-    if order.status != Order.Status.ACCEPTED:
-        raise ValueError("只能在已接受状态下生成面交确认码")
     if created_by.id != order.seller_id:
         raise ValueError("只有卖家可以生成面交确认码")
 
-    # 如果已有未过期的确认码，复用
+    # 如果已有未过期的确认码，复用（支持页面切换后重新获取）
     existing = FaceConfirm.objects.filter(
         order=order, status=FaceConfirm.Status.PENDING
     ).first()
     if existing:
         return existing
+
+    if order.status != Order.Status.ACCEPTED:
+        raise ValueError("只能在已接受状态下生成面交确认码")
 
     code = generate_face_confirm_code()
     face_confirm = FaceConfirm.objects.create(

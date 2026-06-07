@@ -57,7 +57,7 @@ class OrderViewSet(
         user = self.request.user
         qs = (
             Order.objects.filter(Q(buyer=user) | Q(seller=user))
-            .select_related("buyer", "seller", "product")
+            .select_related("buyer", "seller", "product", "face_confirm")
             .prefetch_related("product__images")
         )
         # 支持按状态筛选（逗号分隔多个状态）

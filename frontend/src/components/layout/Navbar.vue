@@ -47,10 +47,12 @@ function logout() {
   >
     <div class="navbar-inner">
       <div class="navbar-left">
-        <el-menu-item index="/" class="brand">
-          <span class="brand-icon">&#127795;</span>
-          <span class="brand-text">SwapCampus</span>
-        </el-menu-item>
+        <el-tooltip content="回到首页" placement="bottom" :show-after="500">
+          <el-menu-item index="/" class="brand">
+            <span class="brand-icon">&#127795;</span>
+            <span class="brand-text">SwapCampus</span>
+          </el-menu-item>
+        </el-tooltip>
       </div>
 
       <div class="navbar-center">
