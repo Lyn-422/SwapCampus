@@ -211,15 +211,13 @@ App.vue 根据路由 `meta.layout` 自动渲染 Navbar 和 Footer：
 | 搜索与筛选 | `views/SearchView.vue` | ✅ |
 | 商品详情 | `views/ProductDetail.vue` | ✅ |
 | 发布商品 | `views/PublishView.vue` | ✅ |
-| 学生证认证 | `views/VerifyStudentView.vue` | ✅ |
 | 聊天列表 | `views/ChatList.vue` | ✅ (10s 轮询) |
-| 聊天对话 | `views/ChatView.vue` | ✅ (WebSocket + 轮询 + 撤回) |
-| 个人主页（资料+商品+订单+积分+认证状态） | `views/ProfileView.vue` | ✅ |
+| 聊天对话 | `views/ChatView.vue` | ✅ (WebSocket + 轮询) |
+| 个人主页（资料+商品+订单+积分） | `views/ProfileView.vue` | ✅ |
 | 我的商品 | `views/MyProducts.vue` | ✅ |
 | 我的订单（完整状态机流程） | `views/MyOrders.vue` | ✅ |
 | 登录 | `views/LoginView.vue` | ✅ |
 | 注册 | `views/RegisterView.vue` | ✅ |
-| 管理员后台（数据看板/商品审核/举报处理/用户管理/学生证审核） | `views/AdminDashboardView.vue` | ✅ |
 
 ### 已实现组件
 
@@ -464,6 +462,19 @@ chore: 杂项          chore: update docker-compose.yml
 | GET | `/categories/` | 分类列表 | 无 |
 | GET | `/tags/` | 标签列表 | 无 |
 
+### 商品模块（`/api/products/`）
+
+| 方法 | 路径 | 说明 | 鉴权 |
+|------|------|------|------|
+| GET | `/` | 商品列表（支持筛选 `?seller=&category=&status=&sort_by=`） | 可选 |
+| POST | `/` | 发布商品 | JWT |
+| GET | `/{id}/` | 商品详情 | 可选 |
+| PATCH | `/{id}/` | 更新商品（含 status 下架） | JWT(卖家) |
+| DELETE | `/{id}/` | 删除商品 | JWT(卖家) |
+| GET | `/my/` | 我的商品 | JWT |
+| GET | `/categories/` | 分类列表 | 无 |
+| GET | `/tags/` | 标签列表 | 无 |
+
 ### WebSocket
 
 | 路径 | 说明 | 鉴权 |
@@ -684,6 +695,38 @@ waitress-serve --port=8000 config.wsgi:application
 
 ## 更新日志
 
+
+### 2026-06-06 — Bug 修复与完善
+
+**种子数据**
+- 新增 `python manage.py seed_products` 命令，初始化 7 大类 + 20 子类的二级分类体系，5 个标签（去除了跟成色重复的"几乎全新""九成新""八成新""功能正常""有瑕疵"）
+- 文件：`apps/products/management/commands/seed_products.py`
+
+**订单筛选修复**（`apps/transactions/views.py`）
+- `OrderViewSet.get_queryset()` 新增 `status` 查询参数过滤，支持逗号分隔多状态。修复了全部/待确认/进行中/已完成 Tab 切换无效的问题。
+
+**取消/拒绝原因**（`apps/transactions/views.py`、`serializers.py`、`frontend/src/views/MyOrders.vue`）
+- 后端 `cancel`/`reject` action 统一读取 `reason` 参数，`OrderListSerializer` 新增 `cancel_reason` 和 `cancel_by` 字段
+- 前端订单卡片新增红色提示条展示取消人 + 原因
+
+**消息气泡布局**（`frontend/src/components/chat/MessageBubble.vue`）
+- 修正为：对方 `[头像][消息]`，自己 `[消息][头像]`
+
+**离开聊天弹"未找到"**（`frontend/src/views/ChatView.vue`）
+- WebSocket close 的 `setTimeout` 未清除导致 3 秒后发无效请求 → 404。新增 `reconnectTimer` 并在 `onUnmounted` 中 clearTimeout
+
+**面交确认码**（`frontend/src/api/transactions.js`、`frontend/src/views/MyOrders.vue`）
+- 修正 API 路径：`generateConfirmCode` 改用 `GET .../face_confirm/`，`verifyConfirmCode` 改用 `POST .../face_confirm/`
+- 确认码生成后持久显示在订单卡片上（绿色大号字体、可选中复制），支持页面刷新后自动恢复、卖家可重新生成
+
+**商品状态标签**（`frontend/src/components/product/ProductCard.vue`）
+- 非 active 状态之前统一显示"已售出"，修正为按实际状态区分：sold→已售出、hidden→已下架、reserved→已预定
+
+---
+
+> 本文件是项目的操作准则，所有 AI 辅助操作、团队协作、代码提交均以此为准。
+> 如有与课程任务书冲突之处，以课程任务书为准。
+
 ### 2026-06-09 — 学生证上传 URL 修复
 
 **问题**：学生证上传时前端显示「网络错误」，上传请求失败。
@@ -734,33 +777,3 @@ waitress-serve --port=8000 config.wsgi:application
 - 前端 `ChatView.vue` 处理 `handleRecallMessage`（优先 WebSocket，REST 兜底）和 `message_recalled` WebSocket 事件
 - 前端 `api/chat.js` 新增 `recallMessage` API 函数
 
-### 2026-06-06 — Bug 修复与完善
-
-**种子数据**
-- 新增 `python manage.py seed_products` 命令，初始化 7 大类 + 20 子类的二级分类体系，5 个标签（去除了跟成色重复的"几乎全新""九成新""八成新""功能正常""有瑕疵"）
-- 文件：`apps/products/management/commands/seed_products.py`
-
-**订单筛选修复**（`apps/transactions/views.py`）
-- `OrderViewSet.get_queryset()` 新增 `status` 查询参数过滤，支持逗号分隔多状态。修复了全部/待确认/进行中/已完成 Tab 切换无效的问题。
-
-**取消/拒绝原因**（`apps/transactions/views.py`、`serializers.py`、`frontend/src/views/MyOrders.vue`）
-- 后端 `cancel`/`reject` action 统一读取 `reason` 参数，`OrderListSerializer` 新增 `cancel_reason` 和 `cancel_by` 字段
-- 前端订单卡片新增红色提示条展示取消人 + 原因
-
-**消息气泡布局**（`frontend/src/components/chat/MessageBubble.vue`）
-- 修正为：对方 `[头像][消息]`，自己 `[消息][头像]`
-
-**离开聊天弹"未找到"**（`frontend/src/views/ChatView.vue`）
-- WebSocket close 的 `setTimeout` 未清除导致 3 秒后发无效请求 → 404。新增 `reconnectTimer` 并在 `onUnmounted` 中 clearTimeout
-
-**面交确认码**（`frontend/src/api/transactions.js`、`frontend/src/views/MyOrders.vue`）
-- 修正 API 路径：`generateConfirmCode` 改用 `GET .../face_confirm/`，`verifyConfirmCode` 改用 `POST .../face_confirm/`
-- 确认码生成后持久显示在订单卡片上（绿色大号字体、可选中复制），支持页面刷新后自动恢复、卖家可重新生成
-
-**商品状态标签**（`frontend/src/components/product/ProductCard.vue`）
-- 非 active 状态之前统一显示"已售出"，修正为按实际状态区分：sold→已售出、hidden→已下架、reserved→已预定
-
----
-
-> 本文件是项目的操作准则，所有 AI 辅助操作、团队协作、代码提交均以此为准。
-> 如有与课程任务书冲突之处，以课程任务书为准。

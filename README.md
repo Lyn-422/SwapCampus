@@ -59,8 +59,6 @@ python manage.py runserver
 >
 > Swagger API 文档: http://127.0.0.1:8000/api/docs/swagger/
 
-### 第二步：启动前端 (Vue 3 + Vite)
-
 打开**另一个终端**：
 
 ```bash
