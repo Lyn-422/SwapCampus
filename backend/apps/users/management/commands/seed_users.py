@@ -15,10 +15,11 @@ class Command(BaseCommand):
     help = "创建完整测试数据（用户 + 商品 + 订单 + 评价 + 信用记录）"
 
     def handle(self, *args, **options):
-        # ── 确保有分类（依赖 seed_products） ──
+        # ── 自动初始化分类（如果还没有） ──
         if not Category.objects.exists():
-            self.stdout.write(self.style.ERROR("请先运行 python manage.py seed_products"))
-            return
+            self.stdout.write("分类数据为空，自动运行 seed_products...")
+            from django.core.management import call_command
+            call_command("seed_products")
 
         default_category = Category.objects.first()
 
