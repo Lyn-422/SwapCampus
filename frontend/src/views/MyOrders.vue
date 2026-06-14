@@ -131,6 +131,23 @@ async function handleComplete(order) {
   } catch {}
 }
 
+function canReview(order) {
+  if (order.status !== 'completed') return false
+  const count = isBuyer(order) ? order.buyer_review_count : order.seller_review_count
+  if (count >= 2) return false
+  // 30-day time limit
+  if (!order.completed_at) return false
+  const deadline = new Date(order.completed_at)
+  deadline.setDate(deadline.getDate() + 30)
+  if (new Date() > deadline) return false
+  return true
+}
+
+function reviewButtonLabel(order) {
+  const count = isBuyer(order) ? order.buyer_review_count : order.seller_review_count
+  return count === 0 ? '去评价' : '追评'
+}
+
 function openReviewDialog(order) {
   reviewOrder.value = order
   reviewRating.value = 5
@@ -276,15 +293,15 @@ async function submitReview() {
               输入确认码
             </el-button>
 
-            <!-- Either: complete after face_confirm -->
+            <!-- Either: review after completed -->
             <el-button
-              v-if="order.status === 'completed' && !(isBuyer(order) ? order.buyer_rated : order.seller_rated)"
+              v-if="canReview(order)"
               size="small"
               type="warning"
               plain
               @click="openReviewDialog(order)"
             >
-              去评价
+              {{ reviewButtonLabel(order) }}
             </el-button>
           </div>
         </div>

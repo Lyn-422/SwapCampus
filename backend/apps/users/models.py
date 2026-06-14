@@ -5,9 +5,11 @@
 """
 
 import uuid
+from datetime import timedelta
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 from core.models import BaseModel
 
@@ -87,6 +89,24 @@ class User(AbstractUser):
             return "fair"
         else:
             return "poor"
+
+    @property
+    def is_trusted_seller(self) -> bool:
+        """可信卖家：信用优秀 + 完成交易≥3单 + 180天内无违规 + 账号正常."""
+        if not self.is_active or self.credit_score < 150:
+            return False
+        recent_violation = CreditRecord.objects.filter(
+            user=self,
+            reason=CreditRecord.ChangeReason.VIOLATION,
+            created_at__gte=timezone.now() - timedelta(days=180),
+        ).exists()
+        if recent_violation:
+            return False
+        from apps.transactions.models import Order
+        completed = Order.objects.filter(
+            seller=self, status=Order.Status.COMPLETED
+        ).count()
+        return completed >= 3
 
 
 class CreditRecord(BaseModel):

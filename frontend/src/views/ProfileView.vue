@@ -129,6 +129,7 @@ function cancelEdit() {
               :score="profileUser.credit_score"
               :level="profileUser.credit_level"
             />
+            <el-tag v-if="profileUser.is_trusted_seller" type="success" size="small" effect="dark">可信卖家</el-tag>
           </div>
           <p class="profile-meta">
             学号 {{ profileUser.username }}

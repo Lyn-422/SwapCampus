@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getMyProducts, updateProduct, deleteProduct } from '@/api/products'
+import { getMyProducts, updateProduct, deleteProduct, markActive } from '@/api/products'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ProductCard from '@/components/product/ProductCard.vue'
 import { formatPrice, statusLabels } from '@/utils/format'
@@ -32,7 +32,22 @@ async function handleHide(product) {
     })
     await updateProduct(product.id, { status: 'hidden' })
     ElMessage.success('已下架')
-    products.value = products.value.filter(p => p.id !== product.id)
+    product.status = 'hidden'
+  } catch {
+    // cancel or error
+  }
+}
+
+async function handleRelist(product) {
+  try {
+    await ElMessageBox.confirm('确定要重新上架该商品吗？需要管理员重新审核。', '重新上架', {
+      confirmButtonText: '上架',
+      cancelButtonText: '取消',
+      type: 'info',
+    })
+    await markActive(product.id)
+    ElMessage.success('已提交审核，等待管理员通过')
+    product.status = 'pending'
   } catch {
     // cancel or error
   }
@@ -87,7 +102,7 @@ async function handleDelete(product) {
             <h4>{{ product.title }}</h4>
             <div class="item-meta">
               <span class="item-price">{{ formatPrice(product.price) }}</span>
-              <el-tag size="small" :type="product.status === 'active' ? 'success' : 'info'">
+              <el-tag size="small" :type="product.status === 'active' ? 'success' : product.status === 'pending' ? 'warning' : 'info'">
                 {{ statusLabels[product.status] || product.status }}
               </el-tag>
               <span>{{ product.view_count }} 次浏览</span>
@@ -100,6 +115,15 @@ async function handleDelete(product) {
             >
               查看
             </el-button>
+            <el-button
+              v-if="product.status === 'hidden'"
+              size="small"
+              type="primary"
+              @click="handleRelist(product)"
+            >
+              重新上架
+            </el-button>
+            <el-tag v-if="product.status === 'banned'" type="danger" size="small">违规下架</el-tag>
             <el-button
               v-if="product.status === 'active'"
               size="small"

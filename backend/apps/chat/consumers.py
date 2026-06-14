@@ -124,8 +124,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def _handle_chat_message(self, content):
         """处理聊天消息：保存到数据库并广播."""
-        text = content.get("content", "").strip()
-        if not text:
+        text = (content.get("content") or "").strip()
+        image = content.get("image")
+        if not text and not image:
             return
         if len(text) > 2000:
             await self.send_json(
@@ -133,23 +134,24 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             )
             return
 
-        # 保存消息到数据库
-        message = await self._save_message(text)
+        message = await self._save_message(text, image)
 
-        # 广播给会话组内所有在线用户（包括自己，用于多端同步）
+        msg_data = {
+            "id": str(message["id"]),
+            "conversation": self.conversation_uuid,
+            "sender_id": str(self.user.id),
+            "sender_name": self.user.get_display_name(),
+            "content": text,
+            "image": message.get("image"),
+            "is_read": False,
+            "created_at": message["created_at"].isoformat(),
+        }
+
         await self.channel_layer.group_send(
             self.group_name,
             {
                 "type": "chat_message",
-                "message": {
-                    "id": str(message["id"]),
-                    "conversation": self.conversation_uuid,
-                    "sender_id": str(self.user.id),
-                    "sender_name": self.user.get_display_name(),
-                    "content": text,
-                    "is_read": False,
-                    "created_at": message["created_at"].isoformat(),
-                },
+                "message": msg_data,
             },
         )
 
@@ -257,7 +259,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         ).exists()
 
     @database_sync_to_async
-    def _save_message(self, text: str) -> dict:
+    def _save_message(self, text: str, image=None) -> dict:
         """保存消息到数据库并更新会话时间."""
         from apps.chat.models import Conversation, Message
 
@@ -265,15 +267,18 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         msg = Message.objects.create(
             conversation=conversation,
             sender=self.user,
-            content=text,
+            content=text or "",
         )
-        # 刷新会话的 updated_at
         conversation.save(update_fields=["updated_at"])
 
-        return {
+        result = {
             "id": str(msg.id),
             "created_at": msg.created_at,
+            "image": None,
         }
+        if msg.image:
+            result["image"] = msg.image.url
+        return result
 
     @database_sync_to_async
     def _mark_messages_read(self, message_ids: list[str]) -> int:

@@ -7,8 +7,8 @@ from apps.transactions.models import Order
 
 
 def approve_products(modeladmin, request, queryset):
-    """批量审核通过商品（将状态改为在售）."""
-    count = queryset.update(status=Product.Status.ACTIVE)
+    """批量审核通过商品（仅处理待审核状态的商品）."""
+    count = queryset.filter(status=Product.Status.PENDING).update(status=Product.Status.ACTIVE)
     messages.success(request, f"已审核通过 {count} 个商品")
 
 

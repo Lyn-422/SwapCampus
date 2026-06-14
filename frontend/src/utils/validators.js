@@ -5,6 +5,14 @@ export const studentIdRule = {
   trigger: 'blur',
 }
 
+export const usernameRule = {
+  required: true,
+  min: 2,
+  max: 30,
+  message: '请输入学号或用户名（2-30 位）',
+  trigger: 'blur',
+}
+
 export const passwordRule = {
   required: true,
   min: 6,

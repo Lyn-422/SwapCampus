@@ -98,6 +98,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "id": str(obj.seller.id),
             "nickname": obj.seller.get_display_name(),
             "credit_score": obj.seller.credit_score,
+            "is_trusted_seller": obj.seller.is_trusted_seller,
         }
 
     def get_category(self, obj) -> dict | None:
@@ -114,13 +115,35 @@ class ProductDetailSerializer(ProductListSerializer):
 
     images = ProductImageSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    reviews = serializers.SerializerMethodField()
 
     class Meta(ProductListSerializer.Meta):
         fields = ProductListSerializer.Meta.fields + [
             "description",
             "images",
             "tags",
+            "reviews",
             "updated_at",
+        ]
+
+    def get_reviews(self, obj):
+        from apps.transactions.models import Review
+
+        qs = Review.objects.filter(
+            order__product=obj,
+            order__status="completed",
+        ).select_related("reviewer", "reviewee").order_by("-created_at")
+
+        return [
+            {
+                "id": str(r.id),
+                "reviewer_name": r.reviewer.get_display_name(),
+                "reviewee_name": r.reviewee.get_display_name(),
+                "rating": r.rating,
+                "content": r.content,
+                "created_at": r.created_at,
+            }
+            for r in qs
         ]
 
     def get_seller(self, obj) -> dict:
@@ -131,6 +154,7 @@ class ProductDetailSerializer(ProductListSerializer):
             "avatar": self._get_avatar_url(obj.seller),
             "credit_score": obj.seller.credit_score,
             "credit_level": obj.seller.credit_level,
+            "is_trusted_seller": obj.seller.is_trusted_seller,
             "campus": obj.seller.campus,
         }
 

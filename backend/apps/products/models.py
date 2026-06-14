@@ -67,10 +67,12 @@ class Product(BaseModel):
         OLD = "old", "老旧"
 
     class Status(models.TextChoices):
+        PENDING = "pending", "待审核"
         ACTIVE = "active", "在售"
         RESERVED = "reserved", "已预定"
         SOLD = "sold", "已售出"
         HIDDEN = "hidden", "已隐藏"
+        BANNED = "banned", "违规下架"
 
     seller = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -97,7 +99,7 @@ class Product(BaseModel):
     status = models.CharField(
         max_length=10,
         choices=Status.choices,
-        default=Status.ACTIVE,
+        default=Status.PENDING,
         db_index=True,
         verbose_name="商品状态",
     )

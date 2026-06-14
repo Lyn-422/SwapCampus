@@ -373,6 +373,30 @@ function isSeller() {
         </div>
       </section>
 
+      <!-- Reviews -->
+      <section class="detail-reviews">
+        <h3>交易评价</h3>
+        <div v-if="product.reviews?.length" class="reviews-list">
+          <div v-for="review in product.reviews" :key="review.id" class="review-item">
+            <div class="review-header">
+              <span class="reviewer-name">{{ review.reviewer_name }}</span>
+              <span class="review-label">评价 {{ review.reviewee_name }}</span>
+              <div class="review-stars">
+                <el-icon v-for="n in 5" :key="n" :size="14" :color="n <= review.rating ? '#f5a623' : '#d9d9d9'">
+                  <component :is="n <= review.rating ? 'StarFilled' : 'Star'" />
+                </el-icon>
+              </div>
+              <span class="review-time">{{ formatTime(review.created_at) }}</span>
+            </div>
+            <p class="review-content" v-if="review.content">{{ review.content }}</p>
+          </div>
+        </div>
+        <div v-else class="reviews-empty">
+          <el-icon :size="32"><component :is="'ChatDotSquare'" /></el-icon>
+          <p>暂无评价</p>
+        </div>
+      </section>
+
       <!-- Related Products -->
       <section v-if="relatedProducts.length" class="related-section">
         <h3>相关推荐</h3>
@@ -641,6 +665,80 @@ function isSeller() {
   .detail-price {
     font-size: 24px;
   }
+}
+
+/* Reviews */
+.detail-reviews {
+  background: var(--bg-card);
+  padding: 28px 32px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  margin-top: 24px;
+}
+
+.detail-reviews h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-item {
+  padding: 16px;
+  background: var(--bg-page);
+  border-radius: var(--radius-base);
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reviewer-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.review-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.review-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.review-time {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.review-content {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-regular);
+  white-space: pre-wrap;
+}
+
+.reviews-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 .related-section {

@@ -79,7 +79,7 @@ class OrderViewSet(
         create_notification(
             order.seller, "new_order",
             "新订单",
-            f"{self.request.user.get_display_name()} 购买了《{order.product.title}》",
+            f"{self.request.user.get_display_name()} 预定了《{order.product.title}》",
             related_order=order, related_product=order.product,
         )
         return order
@@ -215,6 +215,7 @@ class ReviewViewSet(
         order_id = create_serializer.validated_data["order_id"]
         rating = create_serializer.validated_data["rating"]
         content = create_serializer.validated_data.get("content", "")
+        image = create_serializer.validated_data.get("image")
 
         try:
             order = Order.objects.get(id=order_id)
@@ -229,7 +230,7 @@ class ReviewViewSet(
             self.permission_denied(request)
 
         try:
-            review = create_review(order, request.user, rating, content)
+            review = create_review(order, request.user, rating, content, image=image)
         except ValueError as e:
             return Response(
                 {"success": False, "data": None, "error": {"code": "BAD_REQUEST", "message": str(e)}},

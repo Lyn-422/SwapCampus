@@ -116,6 +116,11 @@ function logout() {
             <el-menu-item index="/my-products">我的商品</el-menu-item>
             <el-menu-item index="/my-orders">我的订单</el-menu-item>
             <el-menu-item index="/favorites">我的收藏</el-menu-item>
+            <el-divider v-if="auth.isAdmin" style="margin: 4px 0" />
+            <el-menu-item v-if="auth.isAdmin" index="/admin">
+              <el-icon><component :is="'Setting'" /></el-icon>
+              管理后台
+            </el-menu-item>
             <el-menu-item @click="logout">退出登录</el-menu-item>
           </el-sub-menu>
         </template>

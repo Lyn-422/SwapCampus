@@ -49,10 +49,12 @@ export const conditionColors = {
 }
 
 export const statusLabels = {
+  pending: '待审核',
   active: '在售',
   reserved: '已预定',
   sold: '已售出',
   hidden: '已隐藏',
+  banned: '违规下架',
 }
 
 export const orderStatusLabels = {

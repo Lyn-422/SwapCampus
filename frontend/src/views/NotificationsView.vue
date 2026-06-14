@@ -52,7 +52,9 @@ async function handleClick(notif) {
       notifStore.decrementUnread()
     } catch {}
   }
-  if (notif.related_order) {
+  if (notif.type === 'new_review' && notif.related_product) {
+    router.push(`/product/${notif.related_product}`)
+  } else if (notif.related_order) {
     router.push('/my-orders')
   } else if (notif.related_product) {
     router.push(`/product/${notif.related_product}`)

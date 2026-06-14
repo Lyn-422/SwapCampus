@@ -15,6 +15,7 @@ class MessageSerializer(serializers.ModelSerializer):
     """消息序列化器."""
 
     sender_name = serializers.SerializerMethodField()
+    image = serializers.ImageField(read_only=True)
 
     class Meta:
         model = Message
@@ -24,6 +25,7 @@ class MessageSerializer(serializers.ModelSerializer):
             "sender",
             "sender_name",
             "content",
+            "image",
             "is_read",
             "created_at",
         ]
@@ -32,12 +34,28 @@ class MessageSerializer(serializers.ModelSerializer):
             "conversation",
             "sender",
             "sender_name",
+            "image",
             "is_read",
             "created_at",
         ]
 
     def get_sender_name(self, obj) -> str:
         return obj.sender.get_display_name()
+
+
+class MessageCreateSerializer(serializers.ModelSerializer):
+    """创建消息序列化器."""
+
+    class Meta:
+        model = Message
+        fields = ["content", "image"]
+
+    def validate(self, attrs):
+        content = attrs.get("content", "")
+        image = attrs.get("image")
+        if not content and not image:
+            raise serializers.ValidationError("消息内容和图片至少填一项")
+        return attrs
 
 
 # ═══════════════════════════════════════════════════════════

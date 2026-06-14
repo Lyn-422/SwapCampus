@@ -14,6 +14,7 @@ from apps.chat.serializers import (
     ConversationCreateSerializer,
     ConversationDetailSerializer,
     ConversationListSerializer,
+    MessageCreateSerializer,
     MessageSerializer,
 )
 from core.utils import build_success_response
@@ -139,16 +140,15 @@ class ConversationViewSet(
     def send_message(self, request, id=None):
         """POST /api/chat/conversations/{id}/messages/ — 发送消息."""
         conversation = self.get_object()
-        serializer = MessageSerializer(data=request.data)
+        serializer = MessageCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         msg = serializer.save(
             conversation=conversation,
             sender=request.user,
         )
-        # 发送后自动刷新会话的 updated_at
         conversation.save(update_fields=["updated_at"])
         return Response(
-            build_success_response(MessageSerializer(msg).data),
+            build_success_response(MessageSerializer(msg, context={"request": request}).data),
             status=status.HTTP_201_CREATED,
         )
 

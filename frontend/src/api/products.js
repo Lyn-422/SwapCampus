@@ -40,6 +40,10 @@ export function getRelatedProducts(id) {
   return client.get(`/products/${id}/related/`)
 }
 
+export function markActive(id) {
+  return client.post(`/products/${id}/mark_active/`)
+}
+
 export function deleteProduct(id) {
   return client.delete(`/products/${id}/`)
 }

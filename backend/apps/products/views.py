@@ -87,7 +87,7 @@ class ProductViewSet(
         return qs.select_related("seller", "category").prefetch_related("images", "tags")
 
     def perform_create(self, serializer):
-        serializer.save(seller=self.request.user)
+        serializer.save(seller=self.request.user, status=Product.Status.PENDING)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -153,11 +153,16 @@ class ProductViewSet(
         change_product_status(product, Product.Status.SOLD)
         return Response(build_success_response({"status": product.status}))
 
-    @extend_schema(summary="重新上架", description="将商品状态改为「在售」（仅卖家）")
+    @extend_schema(summary="重新上架", description="将商品提交审核（仅卖家）")
     @action(detail=True, methods=["post"])
     def mark_active(self, request, id=None):
         product = self.get_object()
-        change_product_status(product, Product.Status.ACTIVE)
+        if product.status == Product.Status.BANNED:
+            return Response(
+                {"success": False, "data": None, "error": {"message": "违规下架的商品无法重新上架"}},
+                status=400,
+            )
+        change_product_status(product, Product.Status.PENDING)
         return Response(build_success_response({"status": product.status}))
 
     @extend_schema(summary="相关商品推荐", description="获取与指定商品相关的其他在售商品")

@@ -11,6 +11,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 
 from apps.products.models import Product
@@ -204,6 +205,7 @@ class TestReview:
             seller=seller,
             product=product,
             status=Order.Status.COMPLETED,
+            completed_at=timezone.now(),
         )
 
     def test_create_review_buyer_to_seller(self, buyer_client, completed_order, db):
@@ -217,7 +219,7 @@ class TestReview:
         response = buyer_client.post(url, data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         completed_order.refresh_from_db()
-        assert completed_order.buyer_rated is True
+        assert completed_order.buyer_review_count == 1
 
     def test_create_review_seller_to_buyer(self, seller_client, completed_order, db):
         """卖家完成交易后评价买家."""
@@ -230,15 +232,21 @@ class TestReview:
         response = seller_client.post(url, data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         completed_order.refresh_from_db()
-        assert completed_order.seller_rated is True
+        assert completed_order.seller_review_count == 1
 
     def test_duplicate_review(self, buyer_client, completed_order, db):
-        """同一个人不能重复评价同一订单."""
+        """同一个人最多评价 2 次（首次 + 追评），第 3 次被拒."""
         url = reverse("review-list")
         data = {"order_id": str(completed_order.id), "rating": 5}
-        buyer_client.post(url, data, format="json")
-        response = buyer_client.post(url, data, format="json")
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        # 首次评价
+        r1 = buyer_client.post(url, data, format="json")
+        assert r1.status_code == status.HTTP_201_CREATED
+        # 追评
+        r2 = buyer_client.post(url, data, format="json")
+        assert r2.status_code == status.HTTP_201_CREATED
+        # 第三次应被拒
+        r3 = buyer_client.post(url, data, format="json")
+        assert r3.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_cannot_review_pending_order(self, buyer_client, order, db):
         """不能评价未完成订单."""
@@ -299,7 +307,8 @@ class TestCreditIntegration:
     def test_good_review_bonus(self, buyer, seller, product, db):
         """好评 +3 分."""
         order = Order.objects.create(
-            buyer=buyer, seller=seller, product=product, status=Order.Status.COMPLETED
+            buyer=buyer, seller=seller, product=product, status=Order.Status.COMPLETED,
+            completed_at=timezone.now(),
         )
         old_score = seller.credit_score
         create_review(order, buyer, 5, "很好")
@@ -309,7 +318,8 @@ class TestCreditIntegration:
     def test_bad_review_penalty(self, buyer, seller, product, db):
         """差评 -10 分."""
         order = Order.objects.create(
-            buyer=buyer, seller=seller, product=product, status=Order.Status.COMPLETED
+            buyer=buyer, seller=seller, product=product, status=Order.Status.COMPLETED,
+            completed_at=timezone.now(),
         )
         old_score = seller.credit_score
         create_review(order, buyer, 1, "很差")

@@ -58,8 +58,8 @@ class Order(BaseModel):
         verbose_name="取消人",
     )
     completed_at = models.DateTimeField(null=True, blank=True, verbose_name="完成时间")
-    buyer_rated = models.BooleanField(default=False, verbose_name="买家已评价")
-    seller_rated = models.BooleanField(default=False, verbose_name="卖家已评价")
+    buyer_review_count = models.IntegerField(default=0, verbose_name="买家评价次数")
+    seller_review_count = models.IntegerField(default=0, verbose_name="卖家评价次数")
 
     class Meta:
         db_table = "orders"
@@ -109,6 +109,12 @@ class Review(BaseModel):
         verbose_name="评分",
     )
     content = models.TextField(max_length=500, blank=True, verbose_name="评价内容")
+    image = models.ImageField(
+        upload_to="review_images/%Y/%m/",
+        null=True,
+        blank=True,
+        verbose_name="评价图片",
+    )
     review_type = models.CharField(
         max_length=20,
         choices=ReviewType.choices,
@@ -120,7 +126,6 @@ class Review(BaseModel):
         verbose_name = "交易评价"
         verbose_name_plural = verbose_name
         ordering = ["-created_at"]
-        unique_together = [("order", "reviewer")]
 
     def __str__(self) -> str:
         return f"{self.reviewer.get_display_name()} → {self.reviewee.get_display_name()} ({self.rating}★)"

@@ -9,6 +9,7 @@ export const useAuthStore = defineStore('auth', () => {
   const refreshToken = ref(localStorage.getItem('refresh_token') || null)
 
   const isLoggedIn = computed(() => !!token.value)
+  const isAdmin = computed(() => user.value?.is_staff === true)
   const creditLevel = computed(() => user.value?.credit_level || 'good')
   const creditScore = computed(() => user.value?.credit_score || 100)
 
@@ -67,6 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     refreshToken,
     isLoggedIn,
+    isAdmin,
     creditLevel,
     creditScore,
     login,

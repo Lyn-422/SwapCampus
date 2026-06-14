@@ -2,9 +2,9 @@
 import { ref, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
-import { studentIdRule, passwordRule } from '@/utils/validators'
+import { usernameRule, passwordRule } from '@/utils/validators'
 
 const router = useRouter()
 const route = useRoute()
@@ -28,8 +28,17 @@ async function handleLogin() {
     ElMessage.success('登录成功')
     const redirect = route.query.redirect || '/'
     router.push(redirect)
-  } catch {
-    ElMessage.error('学号或密码错误')
+  } catch (err) {
+    const errorData = err?.response?.data?.error
+    if (errorData?.code === 'ACCOUNT_DISABLED') {
+      ElMessageBox.alert(
+        '您的账号已被管理员封禁，如有疑问请联系管理员申诉。',
+        '账号已封禁',
+        { confirmButtonText: '知道了', type: 'warning', center: true },
+      )
+    } else {
+      ElMessage.error(errorData?.message || '学号或密码错误')
+    }
   } finally {
     loading.value = false
   }
@@ -48,17 +57,17 @@ async function handleLogin() {
       <el-form
         ref="formRef"
         :model="form"
-        :rules="{ username: [studentIdRule], password: [passwordRule] }"
+        :rules="{ username: [usernameRule], password: [passwordRule] }"
         label-position="top"
         size="large"
         @submit.prevent="handleLogin"
       >
-        <el-form-item label="学号" prop="username">
+        <el-form-item label="学号/用户名" prop="username">
           <el-input
             v-model="form.username"
-            placeholder="请输入学号"
+            placeholder="请输入学号或用户名"
             :prefix-icon="User"
-            maxlength="9"
+            maxlength="30"
             autocomplete="username"
           />
         </el-form-item>

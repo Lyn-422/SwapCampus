@@ -5,6 +5,7 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -42,9 +43,37 @@ class TokenObtainPairView(BaseTokenObtainPairView):
     """
 
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        # SimpleJWT 返回 {"access": "...", "refresh": "..."}
-        # 包装为统一格式
+        # 先检查用户是否被封禁，以便返回明确的错误信息
+        username = request.data.get("username", "")
+        if username:
+            try:
+                user = User.objects.get(username=username)
+                if not user.is_active:
+                    return Response(
+                        {
+                            "success": False,
+                            "data": None,
+                            "error": {
+                                "code": "ACCOUNT_DISABLED",
+                                "message": "您的账号已被管理员封禁，请联系管理员解封",
+                            },
+                        },
+                        status=403,
+                    )
+            except User.DoesNotExist:
+                pass  # 用户不存在，交给 SimpleJWT 返回统一错误
+
+        try:
+            response = super().post(request, *args, **kwargs)
+        except Exception:
+            return Response(
+                {
+                    "success": False,
+                    "data": None,
+                    "error": {"code": "INVALID_CREDENTIALS", "message": "学号或密码错误"},
+                },
+                status=401,
+            )
         return Response(
             build_success_response(response.data),
             status=response.status_code,
@@ -120,6 +149,10 @@ class UserViewSet(
 
     queryset = User.objects.all()
     lookup_field = "id"
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["username", "nickname"]
+    ordering_fields = ["credit_score", "date_joined"]
+    ordering = ["-date_joined"]
 
     def get_serializer_class(self):
         if self.action in ("me", "update_me"):

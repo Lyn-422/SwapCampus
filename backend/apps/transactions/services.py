@@ -96,7 +96,7 @@ def transition_order(order: Order, new_status_str: str, user, **kwargs) -> Order
         create_notification(
             order.seller, "new_order",
             "新订单",
-            f"{user.get_display_name()} 购买了《{order.product.title}》",
+            f"{user.get_display_name()} 预定了《{order.product.title}》",
             related_order=order, related_product=order.product,
         )
 
@@ -109,6 +109,9 @@ def transition_order(order: Order, new_status_str: str, user, **kwargs) -> Order
         )
 
     elif new_status_str == Order.Status.REJECTED:
+        Product.objects.filter(pk=order.product_id).update(
+            status=Product.Status.ACTIVE
+        )
         create_notification(
             order.buyer, "order_update",
             "订单已拒绝",
@@ -150,37 +153,38 @@ def transition_order(order: Order, new_status_str: str, user, **kwargs) -> Order
 
 
 @db_transaction.atomic
-def create_review(order: Order, reviewer, rating: int, content: str = "") -> Review:
-    """创建交易评价.
+def create_review(order: Order, reviewer, rating: int, content: str = "", image=None) -> Review:
+    """创建交易评价，最多 2 次，限完成后 30 天内."""
+    from datetime import timedelta
 
-    Args:
-        order: 已完成的订单
-        reviewer: 评价人
-        rating: 评分 (1-5)
-        content: 评价内容
-
-    Returns:
-        新创建的 Review 实例
-    """
     if order.status != Order.Status.COMPLETED:
         raise ValueError("只能评价已完成的订单")
 
     if reviewer.id not in (order.buyer_id, order.seller_id):
         raise ValueError("只有买卖双方可以评价")
 
+    # 检查 30 天时限
+    if order.completed_at is None:
+        raise ValueError("订单未记录完成时间")
+    if timezone.now() > order.completed_at + timedelta(days=30):
+        raise ValueError("订单已完成超过 30 天，无法评价")
+
     # 确定评价类型和被评价人
     if reviewer.id == order.buyer_id:
         review_type = Review.ReviewType.BUYER_TO_SELLER
         reviewee = order.seller
-        rated_flag = "buyer_rated"
+        count_field = "buyer_review_count"
     else:
         review_type = Review.ReviewType.SELLER_TO_BUYER
         reviewee = order.buyer
-        rated_flag = "seller_rated"
+        count_field = "seller_review_count"
 
-    # 检查是否已评价
-    if getattr(order, rated_flag):
-        raise ValueError("您已经对此订单进行过评价")
+    # 检查评价次数（最多 2 次）
+    current_count = getattr(order, count_field)
+    if current_count >= 2:
+        raise ValueError("评价次数已达上限")
+
+    is_first_review = current_count == 0
 
     review = Review.objects.create(
         order=order,
@@ -189,22 +193,25 @@ def create_review(order: Order, reviewer, rating: int, content: str = "") -> Rev
         rating=rating,
         content=content,
         review_type=review_type,
+        image=image or None,
     )
 
-    # 更新订单的评价标记
-    setattr(order, rated_flag, True)
-    order.save(update_fields=[rated_flag, "updated_at"])
+    # 递增评价次数
+    setattr(order, count_field, current_count + 1)
+    order.save(update_fields=[count_field, "updated_at"])
 
-    # 信用分变动
-    if rating >= 4:
-        _add_credit(reviewee, "good_review", f"获得好评 (订单 #{order.id.hex[:8]})", order)
-    elif rating <= 2:
-        _add_credit(reviewee, "bad_review", f"获得差评 (订单 #{order.id.hex[:8]})", order)
+    # 信用分变动（仅首次评价触发）
+    if is_first_review:
+        if rating >= 4:
+            _add_credit(reviewee, "good_review", f"获得好评 (订单 #{order.id.hex[:8]})", order)
+        elif rating <= 2:
+            _add_credit(reviewee, "bad_review", f"获得差评 (订单 #{order.id.hex[:8]})", order)
 
     # 通知被评价人
+    label = "首次评价" if is_first_review else "追评"
     create_notification(
         reviewee, "new_review",
-        "收到新评价",
+        f"收到{label}",
         f"{reviewer.get_display_name()} 给你打了 {rating} 星",
         related_order=order, related_product=order.product,
     )

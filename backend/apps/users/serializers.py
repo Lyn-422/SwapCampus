@@ -80,6 +80,7 @@ class UserSerializer(serializers.ModelSerializer):
     """
 
     credit_level = serializers.CharField(read_only=True)
+    is_trusted_seller = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = User
@@ -90,6 +91,7 @@ class UserSerializer(serializers.ModelSerializer):
             "avatar",
             "credit_score",
             "credit_level",
+            "is_trusted_seller",
             "campus",
             "bio",
             "date_joined",
@@ -104,6 +106,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """
 
     credit_level = serializers.CharField(read_only=True)
+    is_trusted_seller = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = User
@@ -115,14 +118,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "avatar",
             "credit_score",
             "credit_level",
+            "is_trusted_seller",
             "campus",
             "bio",
+            "is_staff",
             "date_joined",
         ]
         read_only_fields = [
             "id",
             "username",
             "credit_score",
+            "is_staff",
+            "is_trusted_seller",
             "credit_level",
             "date_joined",
         ]

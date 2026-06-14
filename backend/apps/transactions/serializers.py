@@ -34,6 +34,9 @@ class OrderListSerializer(serializers.ModelSerializer):
             "cancel_reason",
             "cancel_by",
             "face_confirm_code",
+            "buyer_review_count",
+            "seller_review_count",
+            "completed_at",
             "created_at",
         ]
 
@@ -79,11 +82,6 @@ class OrderDetailSerializer(OrderListSerializer):
 
     class Meta(OrderListSerializer.Meta):
         fields = OrderListSerializer.Meta.fields + [
-            "cancel_reason",
-            "cancel_by",
-            "completed_at",
-            "buyer_rated",
-            "seller_rated",
             "face_confirm_status",
             "updated_at",
         ]
@@ -181,6 +179,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     reviewer_name = serializers.SerializerMethodField(read_only=True)
     reviewee_name = serializers.SerializerMethodField(read_only=True)
     review_type_display = serializers.CharField(source="get_review_type_display", read_only=True)
+    image = serializers.ImageField(read_only=True)
 
     class Meta:
         model = Review
@@ -193,6 +192,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             "reviewee_name",
             "rating",
             "content",
+            "image",
             "review_type",
             "review_type_display",
             "created_at",
@@ -224,6 +224,7 @@ class ReviewCreateSerializer(serializers.Serializer):
     order_id = serializers.UUIDField(write_only=True)
     rating = serializers.IntegerField(min_value=1, max_value=5)
     content = serializers.CharField(max_length=500, required=False, allow_blank=True, default="")
+    image = serializers.ImageField(required=False, allow_null=True)
 
 
 # ═══════════════════════════════════════════════════════════

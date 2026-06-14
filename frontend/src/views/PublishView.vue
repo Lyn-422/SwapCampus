@@ -56,7 +56,7 @@ async function handlePublish() {
     })
 
     await createProduct(formData)
-    ElMessage.success('发布成功')
+    ElMessage.success('商品已提交，等待管理员审核后上线')
     router.push('/my-products')
   } catch {
     // handled by interceptor

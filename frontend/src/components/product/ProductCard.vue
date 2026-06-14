@@ -61,7 +61,7 @@ function goDetail() {
 
       <div v-if="product.status !== 'active'" class="status-overlay">
         <el-tag type="info" size="large" effect="plain">
-          {{ product.status === 'sold' ? '已售出' : product.status === 'hidden' ? '已下架' : '已预定' }}
+          {{ product.status === 'sold' ? '已售出' : product.status === 'hidden' ? '已下架' : product.status === 'pending' ? '审核中' : product.status === 'banned' ? '违规下架' : '已预定' }}
         </el-tag>
       </div>
     </div>
@@ -82,6 +82,7 @@ function goDetail() {
             {{ product.seller?.nickname?.[0] || '?' }}
           </el-avatar>
           <span>{{ product.seller?.nickname }}</span>
+          <el-tag v-if="product.seller?.is_trusted_seller" size="small" type="success" effect="plain" class="trusted-tag">可信卖家</el-tag>
         </div>
         <span class="card-time">{{ formatTime(product.created_at) }}</span>
       </div>
@@ -214,6 +215,10 @@ function goDetail() {
 
 .seller-avatar {
   font-size: 12px;
+}
+
+.trusted-tag {
+  font-size: 11px;
 }
 
 .fav-btn {
