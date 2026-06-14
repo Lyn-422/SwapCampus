@@ -39,6 +39,7 @@ node_modules/
 dist/
 frontend/dist/
 *.local
+package-lock.json
 
 # Docker
 docker/.env
