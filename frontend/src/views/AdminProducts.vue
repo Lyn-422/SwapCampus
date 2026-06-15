@@ -1,13 +1,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { getAdminProducts, moderateProduct } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Check, Hide, ArrowLeft } from '@element-plus/icons-vue'
 
+const route = useRoute()
 const loading = ref(false)
 const products = ref([])
 const pagination = ref({ page: 1, page_size: 20, total: 0 })
-const filters = ref({ status: 'pending', search: '' })
+const filters = ref({ status: route.query.status || 'pending', search: '' })
 
 // 驳回弹窗相关
 const rejectDialogVisible = ref(false)

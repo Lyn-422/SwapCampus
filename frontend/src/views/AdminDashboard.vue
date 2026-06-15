@@ -40,7 +40,7 @@ onMounted(fetchDashboard)
     <h1 class="page-title">管理后台</h1>
 
     <div v-loading="loading" class="stats-grid">
-      <el-card class="stat-card">
+      <el-card class="stat-card clickable" @click="router.push('/admin/users')">
         <div class="stat-inner">
           <div class="stat-icon users">
             <el-icon :size="28"><User /></el-icon>
@@ -64,7 +64,7 @@ onMounted(fetchDashboard)
         </div>
       </el-card>
 
-      <el-card class="stat-card">
+      <el-card class="stat-card clickable" @click="router.push({ path: '/admin/products', query: { status: 'active' } })">
         <div class="stat-inner">
           <div class="stat-icon products">
             <el-icon :size="28"><ShoppingCart /></el-icon>
@@ -76,7 +76,7 @@ onMounted(fetchDashboard)
         </div>
       </el-card>
 
-      <el-card class="stat-card">
+      <el-card class="stat-card clickable" @click="router.push('/admin/products')">
         <div class="stat-inner">
           <div class="stat-icon pending">
             <el-icon :size="28"><Document /></el-icon>
@@ -100,7 +100,7 @@ onMounted(fetchDashboard)
         </div>
       </el-card>
 
-      <el-card class="stat-card">
+      <el-card class="stat-card clickable" @click="router.push('/admin/reports')">
         <div class="stat-inner">
           <div class="stat-icon reports">
             <el-icon :size="28"><Warning /></el-icon>

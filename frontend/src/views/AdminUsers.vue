@@ -1,15 +1,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { getAdminUsers, banUser, approveUser, rejectUser } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const route = useRoute()
 const loading = ref(false)
 const users = ref([])
 const pagination = ref({ page: 1, page_size: 20, total: 0 })
-const filters = ref({ search: '', is_active: '', status: '' })
+const filters = ref({ search: '', is_active: '', status: route.query.status || '' })
 
 const rejectDialogVisible = ref(false)
 const rejectTarget = ref(null)

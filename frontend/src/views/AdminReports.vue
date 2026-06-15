@@ -1,13 +1,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { getAdminReports, handleReport } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Check, Close, ArrowLeft } from '@element-plus/icons-vue'
 
+const route = useRoute()
 const loading = ref(false)
 const reports = ref([])
 const pagination = ref({ page: 1, page_size: 20, total: 0 })
-const statusFilter = ref('')
+const statusFilter = ref(route.query.status || '')
 
 const reasonLabels = {
   inappropriate: '内容不当',
