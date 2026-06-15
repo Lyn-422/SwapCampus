@@ -12,7 +12,6 @@ const chat = useChatStore()
 const notifStore = useNotificationsStore()
 const router = useRouter()
 const searchKeyword = ref('')
-const showMobileMenu = ref(false)
 let pollTimer = null
 
 onMounted(() => {
@@ -43,13 +42,21 @@ function logout() {
 </script>
 
 <template>
-  <header class="navbar">
+  <el-menu
+    :default-active="router.currentRoute.value.path"
+    mode="horizontal"
+    :ellipsis="false"
+    class="navbar"
+    router
+  >
     <div class="navbar-inner">
       <div class="navbar-left">
-        <router-link to="/" class="brand">
-          <span class="brand-mark">S</span>
-          <span class="brand-text">SwapCampus</span>
-        </router-link>
+        <el-tooltip content="回到首页" placement="bottom" :show-after="500">
+          <el-menu-item index="/" class="brand">
+            <span class="brand-mark">S</span>
+            <span class="brand-text">SwapCampus</span>
+          </el-menu-item>
+        </el-tooltip>
       </div>
 
       <div class="navbar-center">
@@ -66,77 +73,66 @@ function logout() {
 
       <div class="navbar-right">
         <template v-if="auth.isLoggedIn">
-          <router-link to="/chat" class="nav-link" :class="{ active: $route.path === '/chat' }">
-            <el-icon :size="18"><component :is="'ChatDotRound'" /></el-icon>
-            <span class="nav-label">消息</span>
+          <el-menu-item index="/chat">
+            <el-icon><component :is="'ChatDotRound'" /></el-icon>
+            <span>消息</span>
             <el-badge
               v-if="chat.unreadTotal > 0"
               :value="chat.unreadTotal"
-              class="nav-badge"
+              class="unread-badge"
             />
-          </router-link>
+          </el-menu-item>
 
-          <router-link to="/notifications" class="nav-link" :class="{ active: $route.path === '/notifications' }">
-            <el-icon :size="18"><component :is="Bell" /></el-icon>
-            <span class="nav-label">通知</span>
+          <el-menu-item index="/notifications">
+            <el-icon><component :is="Bell" /></el-icon>
+            <span>通知</span>
             <el-badge
               v-if="notifStore.unreadCount > 0"
               :value="notifStore.unreadCount"
-              class="nav-badge"
+              class="unread-badge"
             />
-          </router-link>
+          </el-menu-item>
 
-          <router-link to="/publish" class="btn-publish">
-            <el-icon :size="16"><component :is="'Plus'" /></el-icon>
-            发布
-          </router-link>
+          <el-menu-item index="/publish" class="publish-btn">
+            <button class="btn-publish" @click.stop="$router.push('/publish')">
+              <el-icon :size="16"><component :is="'Plus'" /></el-icon>
+              发布
+            </button>
+          </el-menu-item>
 
-          <el-dropdown trigger="click" popper-class="user-dropdown">
-            <button class="user-trigger">
+          <el-sub-menu index="user-menu">
+            <template #title>
               <el-avatar
-                :size="34"
+                :size="32"
                 :src="auth.user?.avatar"
                 class="nav-avatar"
               >
                 {{ auth.user?.nickname?.[0] || auth.user?.username?.[0] || 'U' }}
               </el-avatar>
-            </button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <div class="dropdown-user-info">
-                  <span class="dropdown-name">{{ auth.user?.nickname || auth.user?.username }}</span>
-                  <span class="dropdown-id">学号 {{ auth.user?.username }}</span>
-                </div>
-                <el-dropdown-item divided>
-                  <router-link to="/profile" class="dropdown-link">个人主页</router-link>
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <router-link to="/my-products" class="dropdown-link">我的商品</router-link>
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <router-link to="/my-orders" class="dropdown-link">我的订单</router-link>
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <router-link to="/favorites" class="dropdown-link">我的收藏</router-link>
-                </el-dropdown-item>
-                <el-dropdown-item v-if="auth.isAdmin" divided>
-                  <router-link to="/admin" class="dropdown-link admin-link">管理后台</router-link>
-                </el-dropdown-item>
-                <el-dropdown-item divided>
-                  <span class="dropdown-link logout-link" @click="logout">退出登录</span>
-                </el-dropdown-item>
-              </el-dropdown-menu>
+              <span class="nav-nickname">{{ auth.user?.nickname || auth.user?.username }}</span>
             </template>
-          </el-dropdown>
+            <el-menu-item index="/profile">个人主页</el-menu-item>
+            <el-menu-item index="/my-products">我的商品</el-menu-item>
+            <el-menu-item index="/my-orders">我的订单</el-menu-item>
+            <el-menu-item index="/favorites">我的收藏</el-menu-item>
+            <el-divider v-if="auth.isAdmin" style="margin: 4px 0" />
+            <el-menu-item v-if="auth.isAdmin" index="/admin">
+              <el-icon><component :is="'Setting'" /></el-icon>
+              管理后台
+            </el-menu-item>
+            <el-menu-item @click="logout">退出登录</el-menu-item>
+          </el-sub-menu>
         </template>
 
         <template v-else>
-          <button class="btn-login" @click="$router.push('/login')">登录</button>
-          <button class="btn-register" @click="$router.push('/register')">注册</button>
+          <div class="nav-auth-buttons">
+            <button class="btn-login" @click="$router.push('/login')">登录</button>
+            <button class="btn-register" @click="$router.push('/register')">注册</button>
+          </div>
         </template>
       </div>
     </div>
-  </header>
+  </el-menu>
 </template>
 
 <style scoped>
@@ -144,9 +140,28 @@ function logout() {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: #ffffff;
-  border-bottom: 1px solid var(--border-color);
-  backdrop-filter: blur(12px);
+  background: rgba(15, 23, 42, 0.94) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.navbar :deep(.el-menu--horizontal) {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+.navbar :deep(.el-sub-menu__title) {
+  color: #cbd5e1 !important;
+  border-bottom: none !important;
+}
+
+.navbar :deep(.el-sub-menu__title:hover) {
+  color: #f1f5f9 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.navbar :deep(.el-sub-menu__icon-arrow) {
+  color: #64748b !important;
 }
 
 .navbar-inner {
@@ -156,7 +171,7 @@ function logout() {
   margin: 0 auto;
   width: 100%;
   padding: 0 20px;
-  height: 62px;
+  height: 60px;
 }
 
 .navbar-left {
@@ -167,150 +182,141 @@ function logout() {
   display: flex;
   align-items: center;
   gap: 10px;
-  text-decoration: none;
+  border-bottom: none !important;
+  color: #fff !important;
+  padding: 0 12px;
 }
 
 .brand-mark {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #d97706, #f59e0b);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #fff;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.25);
 }
 
 .brand-text {
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #f1f5f9;
   letter-spacing: -0.03em;
+}
+
+.navbar :deep(.el-menu-item.is-active) {
+  background: transparent !important;
+  color: #fff !important;
+  position: relative;
+}
+
+.navbar :deep(.el-menu-item.is-active::after) {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 2px;
+  background: #818cf8;
+  border-radius: 1px;
 }
 
 .navbar-center {
   flex: 1;
-  max-width: 420px;
-  margin: 0 28px;
+  max-width: 440px;
+  margin: 0 32px;
 }
 
 .search-input :deep(.el-input__wrapper) {
   border-radius: 10px;
-  background: #f5f5f4;
-  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: none;
   transition: all 0.2s;
 }
 
 .search-input :deep(.el-input__wrapper:hover) {
-  background: #e7e5e4;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .search-input :deep(.el-input__wrapper.is-focus) {
-  background: #ffffff;
-  border-color: #d97706;
-  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .search-input :deep(.el-input__inner) {
-  color: var(--text-primary);
+  color: #e2e8f0;
 }
 
 .search-input :deep(.el-input__inner::placeholder) {
-  color: #a8a29e;
+  color: #475569;
 }
 
 .search-input :deep(.el-input__prefix) {
-  color: #a8a29e;
+  color: #64748b;
 }
 
 .navbar-right {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
 }
 
-.nav-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 8px 14px;
-  border-radius: 10px;
-  color: var(--text-regular);
-  text-decoration: none;
-  font-size: 14px;
+.navbar-right :deep(.el-menu-item) {
+  border-bottom: none !important;
+  color: #94a3b8 !important;
   font-weight: 500;
-  transition: all 0.2s;
-  position: relative;
+  transition: color 0.15s;
 }
 
-.nav-link:hover {
-  background: #f5f5f4;
-  color: var(--text-primary);
+.navbar-right :deep(.el-menu-item:hover) {
+  color: #f1f5f9 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
 }
 
-.nav-link.active {
-  color: #d97706;
-  background: #fffbeb;
-}
-
-.nav-label {
-  display: inline;
-}
-
-.nav-badge {
-  margin-left: 2px;
-}
-
-.nav-badge :deep(.el-badge__content) {
-  background: #e11d48;
+.publish-btn {
+  border-bottom: none !important;
 }
 
 .btn-publish {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 20px;
-  background: #d97706;
+  padding: 7px 18px;
+  background: #6366f1;
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
-  text-decoration: none;
-  margin-left: 6px;
 }
 
 .btn-publish:hover {
-  background: #b45309;
-  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
-  color: #fff;
-}
-
-.user-trigger {
-  padding: 2px;
-  background: none;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: border-color 0.2s;
-  margin-left: 8px;
-}
-
-.user-trigger:hover {
-  border-color: #d97706;
+  background: #4f46e5;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
 }
 
 .nav-avatar {
-  display: block;
+  margin-right: 6px;
+}
+
+.nav-nickname {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #cbd5e1;
+  font-size: 14px;
 }
 
 .nav-auth-buttons {
@@ -320,30 +326,30 @@ function logout() {
 }
 
 .btn-login {
-  padding: 9px 20px;
+  padding: 8px 18px;
   background: transparent;
-  color: var(--text-primary);
-  border: 1.5px solid var(--border-color);
-  border-radius: 10px;
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
 }
 
 .btn-login:hover {
-  border-color: #d97706;
-  color: #d97706;
-  background: #fffbeb;
+  color: #f1f5f9;
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .btn-register {
-  padding: 9px 22px;
-  background: #d97706;
+  padding: 8px 18px;
+  background: #6366f1;
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -352,65 +358,21 @@ function logout() {
 }
 
 .btn-register:hover {
-  background: #b45309;
-  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
+  background: #4f46e5;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+.unread-badge {
+  margin-left: 4px;
 }
 
 @media (max-width: 768px) {
-  .navbar-center { display: none; }
-  .nav-label { display: none; }
-}
-</style>
+  .navbar-center {
+    display: none;
+  }
 
-<style>
-.user-dropdown {
-  border-radius: 14px !important;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06) !important;
-  border: 1px solid var(--border-color) !important;
-  overflow: hidden;
-}
-
-.dropdown-user-info {
-  padding: 14px 16px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.dropdown-name {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-.dropdown-id {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.dropdown-link {
-  display: block;
-  padding: 4px 0;
-  color: var(--text-primary);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.dropdown-link:hover {
-  color: #d97706;
-}
-
-.admin-link {
-  color: #d97706;
-}
-
-.logout-link {
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.logout-link:hover {
-  color: #e11d48;
+  .nav-nickname {
+    display: none;
+  }
 }
 </style>

@@ -136,12 +136,12 @@ async function handleMarkAll() {
 }
 
 .notif-item.unread {
-  background: #fffbeb;
+  background: #eef2ff;
 }
 
 .notif-icon {
   margin-top: 2px;
-  color: #d97706;
+  color: #6366f1;
   flex-shrink: 0;
 }
 
@@ -161,8 +161,8 @@ async function handleMarkAll() {
   font-size: 11px;
   padding: 1px 6px;
   border-radius: 4px;
-  background: #fffbeb;
-  color: #b45309;
+  background: #eef2ff;
+  color: #4f46e5;
   margin-right: 6px;
 }
 
@@ -181,7 +181,7 @@ async function handleMarkAll() {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #d97706;
+  background: #6366f1;
   flex-shrink: 0;
   margin-top: 6px;
 }

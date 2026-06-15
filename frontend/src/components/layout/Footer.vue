@@ -8,7 +8,7 @@
       </div>
       <div class="footer-right">
         <span>让闲置流转，让信任传递</span>
-        <span class="footer-divider">·</span>
+        <span class="footer-divider">|</span>
         <span>软件工程 T-02</span>
       </div>
     </div>
@@ -21,8 +21,8 @@
 <style scoped>
 .app-footer {
   margin-top: 60px;
-  background: #292524;
-  color: #a8a29e;
+  background: #1e293b;
+  color: #94a3b8;
   font-size: 13px;
 }
 
@@ -34,7 +34,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 32px 20px;
+  padding: 28px 20px;
 }
 
 .footer-brand {
@@ -48,7 +48,7 @@
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: linear-gradient(135deg, #d97706, #f59e0b);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #fff;
   font-size: 13px;
   font-weight: 800;
@@ -59,31 +59,31 @@
 
 .footer-title {
   font-weight: 700;
-  color: #e7e5e4;
+  color: #e2e8f0;
   font-size: 15px;
   letter-spacing: -0.02em;
 }
 
 .footer-desc {
-  color: #78716c;
+  color: #64748b;
 }
 
 .footer-right {
   display: flex;
   gap: 8px;
   align-items: center;
-  color: #78716c;
+  color: #64748b;
 }
 
 .footer-divider {
-  color: #44403c;
+  color: #334155;
 }
 
 .footer-bottom {
   text-align: center;
   padding: 14px 20px;
-  border-top: 1px solid #44403c;
-  color: #57534e;
+  border-top: 1px solid #1e293b;
+  color: #475569;
   font-size: 12px;
 }
 

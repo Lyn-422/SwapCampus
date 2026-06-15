@@ -183,11 +183,11 @@ function goDetail() {
   color: var(--text-regular);
 }
 
-.badge--new { background: #fef3c7; color: #92400e; }
-.badge--like_new { background: #ecfdf5; color: #047857; }
-.badge--good { background: #eff6ff; color: #1e40af; }
-.badge--fair { background: #fffbeb; color: #b45309; }
-.badge--worn { background: #fff1f2; color: #be123c; }
+.badge--new { background: #eef2ff; color: #4f46e5; }
+.badge--like_new { background: #ecfdf5; color: #059669; }
+.badge--good { background: #eff6ff; color: #2563eb; }
+.badge--fair { background: #fffbeb; color: #d97706; }
+.badge--worn { background: #fef2f2; color: #dc2626; }
 
 .card-fav {
   position: absolute;
@@ -209,7 +209,7 @@ function goDetail() {
 
 .card-fav:hover {
   background: #fff;
-  color: #d97706;
+  color: #6366f1;
   transform: scale(1.1);
 }
 
@@ -289,7 +289,7 @@ function goDetail() {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #d97706, #f59e0b);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #fff;
   font-size: 10px;
   font-weight: 700;

@@ -531,12 +531,12 @@ function isSeller() {
   opacity: 0.7;
 }
 
-.thumb:hover { border-color: #d97706; opacity: 1; }
+.thumb:hover { border-color: #6366f1; opacity: 1; }
 
 .thumb.active {
-  border-color: #d97706;
+  border-color: #6366f1;
   opacity: 1;
-  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
 /* Info */
@@ -608,10 +608,10 @@ function isSeller() {
 }
 
 .seller-card:hover {
-  background: #fffbeb;
-  border-color: #fde68a;
+  background: var(--color-brand-light);
+  border-color: #c7d2fe;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.08);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
 }
 
 .seller-detail { flex: 1; display: flex; flex-direction: column; gap: 4px; }

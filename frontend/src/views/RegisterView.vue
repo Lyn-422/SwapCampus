@@ -75,12 +75,9 @@ async function handleRegister() {
 
 <template>
   <div class="auth-page">
-    <div class="auth-bg-orb orb-1"></div>
-    <div class="auth-bg-orb orb-2"></div>
-
     <div class="auth-card">
       <div class="auth-header">
-        <div class="auth-icon">S</div>
+        <span class="auth-icon">S</span>
         <h1>加入 SwapCampus</h1>
         <p>北京林业大学校园闲置交易平台</p>
       </div>
@@ -93,11 +90,7 @@ async function handleRegister() {
         @submit.prevent="handleRegister"
       >
         <el-form-item label="学号" prop="username" :rules="[studentIdRule]">
-          <el-input
-            v-model="form.username"
-            placeholder="输入学号"
-            maxlength="9"
-          />
+          <el-input v-model="form.username" placeholder="输入学号" maxlength="9" />
         </el-form-item>
 
         <el-row :gutter="12">
@@ -157,7 +150,6 @@ async function handleRegister() {
 
         <el-form-item>
           <el-button
-            type="primary"
             :loading="loading"
             @click="handleRegister"
             class="auth-submit-btn"
@@ -180,46 +172,17 @@ async function handleRegister() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fafaf9;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #f8fafc 70%, #eef2ff 100%);
   padding: 20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.auth-bg-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.orb-1 {
-  width: 500px;
-  height: 500px;
-  background: #fde68a;
-  top: -120px;
-  right: -100px;
-}
-
-.orb-2 {
-  width: 400px;
-  height: 400px;
-  background: #fecdd3;
-  bottom: -80px;
-  left: -60px;
 }
 
 .auth-card {
   width: 100%;
   max-width: 480px;
-  background: #ffffff;
-  border-radius: 20px;
+  background: #fff;
+  border-radius: 16px;
   padding: 40px 40px 32px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
-  border: 1px solid var(--border-color);
-  position: relative;
-  z-index: 1;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 .auth-header {
@@ -231,14 +194,14 @@ async function handleRegister() {
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #d97706, #f59e0b);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #fff;
   font-size: 24px;
   font-weight: 800;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.25);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
 }
 
 .auth-header h1 {
@@ -261,7 +224,15 @@ async function handleRegister() {
   font-weight: 600;
   letter-spacing: 0.05em;
   border-radius: 12px;
+  background: #6366f1;
+  border: none;
+  color: #fff;
   margin-top: 4px;
+}
+
+.auth-submit-btn:hover {
+  background: #4f46e5;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
 }
 
 .auth-footer {
@@ -272,12 +243,12 @@ async function handleRegister() {
 }
 
 .auth-footer a {
-  color: #d97706;
+  color: #6366f1;
   font-weight: 600;
 }
 
 .auth-footer a:hover {
-  color: #b45309;
+  color: #4f46e5;
 }
 
 .password-tips {
