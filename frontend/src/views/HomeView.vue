@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useProductsStore } from '@/stores/products'
 import ProductCard from '@/components/product/ProductCard.vue'
@@ -9,6 +9,43 @@ const productsStore = useProductsStore()
 const currentPage = ref(1)
 const pageSize = 20
 const productsRef = ref(null)
+
+const carouselSlides = [
+  { src: '/carousel/472bf1070660183e5bc06a46de7a1df4.jpg', alt: '校园风景 1' },
+  { src: '/carousel/98c8b67e6d67ff246ee36050330837a0.jpg', alt: '校园风景 2' },
+  { src: '/carousel/9e4433ded35df41857ec545286d22f6d.jpg', alt: '校园风景 3' },
+  { src: '/carousel/f0e7b221e5ca73befa72315b4ddcaff5.jpg', alt: '校园风景 4' },
+]
+
+const currentSlide = ref(0)
+let carouselTimer = null
+
+const slideStyle = computed(() => ({
+  transform: `translateX(-${currentSlide.value * 100}%)`,
+}))
+
+function nextSlide() {
+  currentSlide.value = (currentSlide.value + 1) % carouselSlides.length
+}
+
+function prevSlide() {
+  currentSlide.value = (currentSlide.value - 1 + carouselSlides.length) % carouselSlides.length
+}
+
+function goSlide(index) {
+  currentSlide.value = index
+}
+
+function startCarousel() {
+  carouselTimer = setInterval(nextSlide, 4000)
+}
+
+function stopCarousel() {
+  if (carouselTimer) {
+    clearInterval(carouselTimer)
+    carouselTimer = null
+  }
+}
 
 async function loadProducts() {
   await productsStore.fetchProducts({
@@ -25,10 +62,15 @@ function handlePageChange(page) {
 }
 
 onMounted(async () => {
+  startCarousel()
   await Promise.all([
     loadProducts(),
     productsStore.fetchCategories(),
   ])
+})
+
+onUnmounted(() => {
+  stopCarousel()
 })
 </script>
 
@@ -87,6 +129,38 @@ onMounted(async () => {
             <span class="stat-number">面交</span>
             <span class="stat-label">安全模式</span>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Carousel -->
+    <section class="carousel-section">
+      <div class="carousel-wrap" @mouseenter="stopCarousel" @mouseleave="startCarousel">
+        <div class="carousel-track" :style="slideStyle">
+          <div
+            v-for="(slide, i) in carouselSlides"
+            :key="i"
+            class="carousel-slide"
+          >
+            <img :src="slide.src" :alt="slide.alt" class="carousel-img" />
+          </div>
+        </div>
+
+        <button class="carousel-arrow carousel-arrow--left" @click="prevSlide">
+          <el-icon :size="20"><component :is="'ArrowLeft'" /></el-icon>
+        </button>
+        <button class="carousel-arrow carousel-arrow--right" @click="nextSlide">
+          <el-icon :size="20"><component :is="'ArrowRight'" /></el-icon>
+        </button>
+
+        <div class="carousel-dots">
+          <button
+            v-for="(_, i) in carouselSlides"
+            :key="i"
+            class="carousel-dot"
+            :class="{ 'is-active': i === currentSlide }"
+            @click="goSlide(i)"
+          />
         </div>
       </div>
     </section>
@@ -358,6 +432,101 @@ onMounted(async () => {
   width: 1px;
   height: 32px;
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== Carousel ===== */
+.carousel-section {
+  max-width: 1200px;
+  margin: -16px auto 48px;
+  padding: 0 20px;
+}
+
+.carousel-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  aspect-ratio: 16 / 9;
+  background: #1e293b;
+  box-shadow: var(--shadow-lg);
+}
+
+.carousel-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carousel-slide {
+  min-width: 100%;
+  height: 100%;
+}
+
+.carousel-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  opacity: 0;
+}
+
+.carousel-wrap:hover .carousel-arrow {
+  opacity: 1;
+}
+
+.carousel-arrow:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.carousel-arrow--left {
+  left: 12px;
+}
+
+.carousel-arrow--right {
+  right: 12px;
+}
+
+.carousel-dots {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.25s;
+  padding: 0;
+}
+
+.carousel-dot.is-active {
+  background: #fff;
+  width: 24px;
+  border-radius: 4px;
 }
 
 /* ===== Sections ===== */

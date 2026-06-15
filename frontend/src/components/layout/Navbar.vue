@@ -95,10 +95,10 @@ function logout() {
           </el-menu-item>
 
           <el-menu-item index="/publish" class="publish-btn">
-            <el-button type="success" round>
-              <el-icon><component :is="'Plus'" /></el-icon>
+            <button class="btn-publish" @click.stop="$router.push('/publish')">
+              <el-icon :size="16"><component :is="'Plus'" /></el-icon>
               发布
-            </el-button>
+            </button>
           </el-menu-item>
 
           <el-sub-menu index="user-menu">
@@ -127,16 +127,8 @@ function logout() {
 
         <template v-else>
           <div class="nav-auth-buttons">
-            <el-button
-              class="btn-login"
-              round
-              @click="$router.push('/login')"
-            >登录</el-button>
-            <el-button
-              type="success"
-              round
-              @click="$router.push('/register')"
-            >注册</el-button>
+            <button class="btn-login" @click="$router.push('/login')">登录</button>
+            <button class="btn-register" @click="$router.push('/register')">注册</button>
           </div>
         </template>
       </div>
@@ -149,7 +141,7 @@ function logout() {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(15, 23, 42, 0.92) !important;
+  background: rgba(15, 23, 42, 0.94) !important;
   backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -161,11 +153,16 @@ function logout() {
 
 .navbar :deep(.el-sub-menu__title) {
   color: #cbd5e1 !important;
+  border-bottom: none !important;
 }
 
 .navbar :deep(.el-sub-menu__title:hover) {
   color: #f1f5f9 !important;
   background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.navbar :deep(.el-sub-menu__icon-arrow) {
+  color: #64748b !important;
 }
 
 .navbar-inner {
@@ -188,6 +185,7 @@ function logout() {
   gap: 10px;
   border-bottom: none !important;
   color: #fff !important;
+  padding: 0 12px;
 }
 
 .brand-mark {
@@ -214,6 +212,19 @@ function logout() {
 .navbar :deep(.el-menu-item.is-active) {
   background: transparent !important;
   color: #fff !important;
+  position: relative;
+}
+
+.navbar :deep(.el-menu-item.is-active::after) {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 2px;
+  background: #818cf8;
+  border-radius: 1px;
 }
 
 .navbar-center {
@@ -224,20 +235,21 @@ function logout() {
 
 .search-input :deep(.el-input__wrapper) {
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: none;
   transition: all 0.2s;
 }
 
 .search-input :deep(.el-input__wrapper:hover) {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .search-input :deep(.el-input__wrapper.is-focus) {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
   border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .search-input :deep(.el-input__inner) {
@@ -245,7 +257,7 @@ function logout() {
 }
 
 .search-input :deep(.el-input__inner::placeholder) {
-  color: #64748b;
+  color: #475569;
 }
 
 .search-input :deep(.el-input__prefix) {
@@ -261,16 +273,39 @@ function logout() {
 
 .navbar-right :deep(.el-menu-item) {
   border-bottom: none !important;
-  color: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  font-weight: 500;
+  transition: color 0.15s;
 }
 
 .navbar-right :deep(.el-menu-item:hover) {
   color: #f1f5f9 !important;
-  background: rgba(255, 255, 255, 0.06) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
 }
 
 .publish-btn {
   border-bottom: none !important;
+}
+
+.btn-publish {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-publish:hover {
+  background: #4f46e5;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
 }
 
 .nav-avatar {
@@ -282,25 +317,50 @@ function logout() {
   overflow: hidden;
   text-overflow: ellipsis;
   color: #cbd5e1;
+  font-size: 14px;
 }
 
 .nav-auth-buttons {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .btn-login {
-  color: #cbd5e1;
-  border-color: rgba(255, 255, 255, 0.2);
-  font-weight: 500;
+  padding: 8px 18px;
   background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
 }
 
 .btn-login:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
   border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-register {
+  padding: 8px 18px;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-register:hover {
+  background: #4f46e5;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
 }
 
 .unread-badge {

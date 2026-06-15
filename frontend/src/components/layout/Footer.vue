@@ -14,7 +14,6 @@
       </div>
       <div class="footer-bottom">
         <span>&copy; {{ new Date().getFullYear() }} SwapCampus Team. MIT License.</span>
-        <a href="http://beian.miit.gov.cn" target="_blank" rel="noopener">京ICP备2026006511号</a>
       </div>
     </div>
   </footer>
