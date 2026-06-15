@@ -1,5 +1,7 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import router from '@/router'
+import { useAuthStore } from '@/stores/auth'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 
@@ -42,15 +44,12 @@ client.interceptors.response.use(
           config.headers.Authorization = `Bearer ${newToken}`
           return client(config)
         } catch {
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
-          localStorage.removeItem('user')
-          window.location.href = '/login'
+          useAuthStore().clearAuth()
+          router.push('/login')
         }
       } else {
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('user')
-        window.location.href = '/login'
+        useAuthStore().clearAuth()
+        router.push('/login')
       }
     }
 

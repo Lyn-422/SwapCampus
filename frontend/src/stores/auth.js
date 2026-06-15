@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import router from '@/router'
 import { login as loginApi, register as registerApi } from '@/api/auth'
 import { getUserProfile } from '@/api/users'
 
@@ -60,7 +61,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function logout() {
     clearAuth()
-    window.location.href = '/login'
+    router.push('/login')
   }
 
   return {
