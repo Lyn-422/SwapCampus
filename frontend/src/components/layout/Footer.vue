@@ -4,17 +4,16 @@
       <div class="footer-brand">
         <span class="footer-mark">S</span>
         <span class="footer-title">SwapCampus</span>
-        <span class="footer-sep"></span>
         <span class="footer-desc">北京林业大学 · 校园闲置物品交易平台</span>
       </div>
       <div class="footer-right">
         <span>让闲置流转，让信任传递</span>
-        <span class="footer-divider">|</span>
-        <span>软件工程（课程设计）T-02</span>
+        <span class="footer-divider">·</span>
+        <span>软件工程 T-02</span>
       </div>
-      <div class="footer-bottom">
-        <span>&copy; {{ new Date().getFullYear() }} SwapCampus Team. MIT License.</span>
-      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; {{ new Date().getFullYear() }} SwapCampus Team</span>
     </div>
   </footer>
 </template>
@@ -22,9 +21,8 @@
 <style scoped>
 .app-footer {
   margin-top: 60px;
-  padding: 28px 20px;
-  background: #1e293b;
-  color: #94a3b8;
+  background: #292524;
+  color: #a8a29e;
   font-size: 13px;
 }
 
@@ -35,23 +33,24 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  padding: 32px 20px;
 }
 
 .footer-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .footer-mark {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #d97706, #f59e0b);
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -60,51 +59,32 @@
 
 .footer-title {
   font-weight: 700;
-  color: #e2e8f0;
+  color: #e7e5e4;
   font-size: 15px;
   letter-spacing: -0.02em;
 }
 
-.footer-sep {
-  width: 1px;
-  height: 14px;
-  background: #334155;
-  margin: 0 2px;
-}
-
 .footer-desc {
-  color: #64748b;
+  color: #78716c;
 }
 
 .footer-right {
   display: flex;
   gap: 8px;
   align-items: center;
+  color: #78716c;
 }
 
 .footer-divider {
-  color: #334155;
+  color: #44403c;
 }
 
 .footer-bottom {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #1e293b;
-  margin-top: 4px;
-  color: #475569;
+  text-align: center;
+  padding: 14px 20px;
+  border-top: 1px solid #44403c;
+  color: #57534e;
   font-size: 12px;
-}
-
-.footer-bottom a {
-  color: #475569;
-  text-decoration: none;
-}
-
-.footer-bottom a:hover {
-  color: #94a3b8;
 }
 
 @media (max-width: 640px) {

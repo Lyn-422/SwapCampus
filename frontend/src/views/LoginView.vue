@@ -60,11 +60,14 @@ async function handleLogin() {
 
 <template>
   <div class="auth-page">
+    <div class="auth-bg-orb orb-1"></div>
+    <div class="auth-bg-orb orb-2"></div>
+
     <div class="auth-card">
       <div class="auth-header">
-        <span class="auth-icon">S</span>
-        <h1>SwapCampus</h1>
-        <p>校园闲置物品交易平台</p>
+        <div class="auth-icon">S</div>
+        <h1>欢迎回来</h1>
+        <p>登录 SwapCampus，继续你的校园交易</p>
       </div>
 
       <el-form
@@ -75,10 +78,10 @@ async function handleLogin() {
         size="large"
         @submit.prevent="handleLogin"
       >
-        <el-form-item label="学号/用户名" prop="username">
+        <el-form-item label="学号" prop="username">
           <el-input
             v-model="form.username"
-            placeholder="请输入学号或用户名"
+            placeholder="请输入学号"
             :prefix-icon="User"
             maxlength="30"
             autocomplete="username"
@@ -98,20 +101,18 @@ async function handleLogin() {
 
         <el-form-item>
           <el-button
-            type="success"
+            type="primary"
             :loading="loading"
             @click="handleLogin"
             class="auth-submit-btn"
-            round
           >
-            登录
+            登 录
           </el-button>
         </el-form-item>
       </el-form>
 
       <div class="auth-footer">
-        还没有账号？
-        <router-link to="/register">立即注册</router-link>
+        还没有账号？<router-link to="/register">立即注册</router-link>
       </div>
     </div>
   </div>
@@ -123,43 +124,73 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #f8fafc 70%, #eef2ff 100%);
+  background: #fafaf9;
   padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.orb-1 {
+  width: 500px;
+  height: 500px;
+  background: #fde68a;
+  top: -120px;
+  right: -100px;
+}
+
+.orb-2 {
+  width: 400px;
+  height: 400px;
+  background: #fecdd3;
+  bottom: -80px;
+  left: -60px;
 }
 
 .auth-card {
   width: 100%;
   max-width: 400px;
-  background: #fff;
-  border-radius: 16px;
-  padding: 40px 36px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 44px 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-color);
+  position: relative;
+  z-index: 1;
 }
 
 .auth-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
 }
 
 .auth-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #d97706, #f59e0b);
   color: #fff;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
+  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.25);
 }
 
 .auth-header h1 {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 8px 0 4px;
+  margin: 16px 0 6px;
+  letter-spacing: -0.02em;
 }
 
 .auth-header p {
@@ -169,25 +200,26 @@ async function handleLogin() {
 
 .auth-submit-btn {
   width: 100%;
-  height: 44px;
+  height: 46px;
   font-size: 16px;
-  background: #6366f1;
-  border: none;
-}
-
-.auth-submit-btn:hover {
-  background: #4f46e5;
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border-radius: 12px;
 }
 
 .auth-footer {
   text-align: center;
   font-size: 14px;
   color: var(--text-secondary);
+  margin-top: 8px;
 }
 
 .auth-footer a {
-  color: #6366f1;
+  color: #d97706;
   font-weight: 600;
+}
+
+.auth-footer a:hover {
+  color: #b45309;
 }
 </style>

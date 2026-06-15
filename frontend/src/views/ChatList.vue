@@ -99,14 +99,14 @@ function getTitle(conv) {
   max-width: 680px;
   margin: 0 auto;
   background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  padding: 20px 8px;
-  box-shadow: var(--shadow-card);
+  border-radius: 16px;
+  padding: 24px 12px;
+  border: 1px solid var(--border-color);
 }
 
 .page-header {
   padding: 0 16px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .chat-item {
@@ -115,12 +115,13 @@ function getTitle(conv) {
   gap: 14px;
   padding: 14px 16px;
   cursor: pointer;
-  border-radius: var(--radius-base);
-  transition: background 0.15s;
+  border-radius: 12px;
+  transition: all 0.2s;
 }
 
 .chat-item:hover {
-  background: var(--bg-page);
+  background: #fafaf9;
+  transform: translateX(2px);
 }
 
 .chat-item-avatar {
@@ -157,16 +158,9 @@ function getTitle(conv) {
   white-space: nowrap;
 }
 
-.no-preview {
-  font-style: italic;
-}
+.no-preview { font-style: italic; }
 
-.unread-dot {
-  flex-shrink: 0;
-}
+.unread-dot { flex-shrink: 0; }
 
-.empty-tip {
-  font-size: 13px;
-  margin-top: 4px;
-}
+.empty-tip { font-size: 13px; margin-top: 4px; }
 </style>

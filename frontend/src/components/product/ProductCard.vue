@@ -126,21 +126,21 @@ function goDetail() {
 <style scoped>
 .card {
   cursor: pointer;
-  border-radius: var(--radius-lg);
+  border-radius: 14px;
   overflow: hidden;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-hover);
-  border-color: #cbd5e1;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border-color: #d6d3d1;
 }
 
 .card:active {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .card-img {
@@ -148,7 +148,7 @@ function goDetail() {
   width: 100%;
   aspect-ratio: 4/3;
   overflow: hidden;
-  background: #f1f5f9;
+  background: #f5f5f4;
 }
 
 .card-img-el {
@@ -167,49 +167,50 @@ function goDetail() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f1f5f9;
+  background: #f5f5f4;
 }
 
 .card-badge {
   position: absolute;
   top: 10px;
   left: 10px;
-  padding: 3px 8px;
-  border-radius: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(6px);
   color: var(--text-regular);
 }
 
-.badge--new { background: #eef2ff; color: #4f46e5; }
-.badge--like_new { background: #ecfdf5; color: #059669; }
-.badge--good { background: #eff6ff; color: #2563eb; }
-.badge--fair { background: #fffbeb; color: #d97706; }
-.badge--worn { background: #fef2f2; color: #dc2626; }
+.badge--new { background: #fef3c7; color: #92400e; }
+.badge--like_new { background: #ecfdf5; color: #047857; }
+.badge--good { background: #eff6ff; color: #1e40af; }
+.badge--fair { background: #fffbeb; color: #b45309; }
+.badge--worn { background: #fff1f2; color: #be123c; }
 
 .card-fav {
   position: absolute;
   top: 10px;
   right: 10px;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border: none;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(6px);
   cursor: pointer;
-  color: #94a3b8;
+  color: #a8a29e;
   transition: all 0.2s;
 }
 
 .card-fav:hover {
   background: #fff;
-  color: #6366f1;
+  color: #d97706;
+  transform: scale(1.1);
 }
 
 .card-fav.is-active {
@@ -219,7 +220,7 @@ function goDetail() {
 .card-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
@@ -228,8 +229,8 @@ function goDetail() {
 
 .overlay-tag {
   padding: 6px 16px;
-  background: rgba(0, 0, 0, 0.06);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-secondary);
@@ -285,10 +286,10 @@ function goDetail() {
 }
 
 .seller-avatar {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #d97706, #f59e0b);
   color: #fff;
   font-size: 10px;
   font-weight: 700;

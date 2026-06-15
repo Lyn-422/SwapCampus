@@ -265,7 +265,7 @@ function canDelete(comment) {
 }
 
 .reply-name {
-  color: #6366f1;
+  color: #d97706;
   font-weight: 500;
 }
 

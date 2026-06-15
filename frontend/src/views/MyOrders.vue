@@ -399,7 +399,7 @@ async function submitReview() {
 }
 
 .order-title:hover {
-  color: #6366f1;
+  color: #d97706;
 }
 
 .order-meta {
@@ -440,21 +440,21 @@ async function submitReview() {
   gap: 8px;
   margin-top: 8px;
   padding: 8px 14px;
-  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
-  border: 1px dashed #818cf8;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 1px dashed #fbbf24;
   border-radius: 8px;
 }
 
 .face-code-label {
   font-size: 12px;
-  color: #4f46e5;
+  color: #b45309;
   font-weight: 500;
 }
 
 .face-code-value {
   font-size: 20px;
   font-weight: 800;
-  color: #3730a3;
+  color: #92400e;
   letter-spacing: 4px;
   font-family: 'Courier New', monospace;
   user-select: all;
