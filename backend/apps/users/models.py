@@ -21,6 +21,12 @@ class User(AbstractUser):
     使用 username 存储学号（全校唯一标识），email 可选。
     """
 
+    class AccountStatus(models.TextChoices):
+        PENDING = "pending", "待审核"
+        ACTIVE = "active", "正常"
+        REJECTED = "rejected", "已拒绝"
+        BANNED = "banned", "已封禁"
+
     # UUID 主键（覆盖 AbstractUser 默认的自增整数 ID）
     id = models.UUIDField(
         primary_key=True,
@@ -63,6 +69,26 @@ class User(AbstractUser):
         max_length=500,
         blank=True,
         verbose_name="个人简介",
+    )
+    student_id_card = models.ImageField(
+        upload_to="student_id_cards/%Y/%m/",
+        null=True,
+        blank=True,
+        verbose_name="学生证照片",
+        help_text="注册时上传的学生证照片，用于身份验证",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=AccountStatus.choices,
+        default=AccountStatus.ACTIVE,
+        verbose_name="账号状态",
+        help_text="pending=待审核 active=正常 rejected=已拒绝 banned=已封禁",
+    )
+    rejection_reason = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="拒绝原因",
+        help_text="管理员拒绝注册时填写的理由，用户登录时可查看",
     )
 
     class Meta:

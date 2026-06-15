@@ -34,3 +34,16 @@ export function getAdminUsers(params = {}) {
 export function banUser(id, isActive) {
   return client.post(`/admin/users/${id}/ban/`, { is_active: isActive })
 }
+
+// 注册审核
+export function getPendingUsers(params = {}) {
+  return client.get('/admin/users/pending/', { params })
+}
+
+export function approveUser(id) {
+  return client.post(`/admin/users/${id}/approve/`)
+}
+
+export function rejectUser(id, reason) {
+  return client.post(`/admin/users/${id}/reject/`, { reason })
+}

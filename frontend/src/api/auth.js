@@ -1,7 +1,9 @@
 import client from './client'
 
-export function register(data) {
-  return client.post('/users/register/', data)
+export function register(formData) {
+  return client.post('/users/register/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
 }
 
 export function login(data) {

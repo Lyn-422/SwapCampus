@@ -3,8 +3,11 @@
 from django.urls import path
 
 from apps.admin_panel.views import (
+    AdminApproveUserView,
+    AdminPendingUserListView,
     AdminProductApproveView,
     AdminProductListView,
+    AdminRejectUserView,
     AdminReportHandleView,
     AdminReportListView,
     AdminUserBanView,
@@ -23,5 +26,9 @@ urlpatterns = [
     path("reports/<uuid:id>/handle/", AdminReportHandleView.as_view(), name="admin-report-handle"),
     # 用户管理
     path("users/", AdminUserListView.as_view(), name="admin-users"),
+    # 注册审核（pending 必须放在 <uuid:id> 之前，避免被 UUID 匹配）
+    path("users/pending/", AdminPendingUserListView.as_view(), name="admin-users-pending"),
+    path("users/<uuid:id>/approve/", AdminApproveUserView.as_view(), name="admin-user-approve"),
+    path("users/<uuid:id>/reject/", AdminRejectUserView.as_view(), name="admin-user-reject"),
     path("users/<uuid:id>/ban/", AdminUserBanView.as_view(), name="admin-user-ban"),
 ]

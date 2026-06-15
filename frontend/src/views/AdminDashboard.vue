@@ -1,14 +1,17 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { getDashboard } from '@/api/admin'
 import { ElMessage } from 'element-plus'
 import {
-  User, ShoppingCart, Document, Warning,
+  User, ShoppingCart, Document, Warning, Checked,
 } from '@element-plus/icons-vue'
 
+const router = useRouter()
 const loading = ref(true)
 const stats = ref({
   total_users: 0,
+  pending_registrations: 0,
   active_products: 0,
   pending_products: 0,
   pending_orders: 0,
@@ -45,6 +48,18 @@ onMounted(fetchDashboard)
           <div class="stat-info">
             <div class="stat-value">{{ stats.total_users }}</div>
             <div class="stat-label">活跃用户</div>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card class="stat-card clickable" @click="router.push({ path: '/admin/users', query: { status: 'pending' } })">
+        <div class="stat-inner">
+          <div class="stat-icon pending">
+            <el-icon :size="28"><Checked /></el-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value pending">{{ stats.pending_registrations }}</div>
+            <div class="stat-label">待审核注册</div>
           </div>
         </div>
       </el-card>
@@ -180,9 +195,17 @@ onMounted(fetchDashboard)
   flex-shrink: 0;
 }
 
+.stat-card.clickable {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
 .stat-icon.users { background: #409eff; }
 .stat-icon.products { background: #43a047; }
-.stat-icon.pending { background: #909399; }
+.stat-icon.pending { background: #e6a23c; }
 .stat-icon.orders { background: #e6a23c; }
 .stat-icon.reports { background: #f56c6c; }
 
@@ -191,6 +214,7 @@ onMounted(fetchDashboard)
   font-weight: 700;
   color: #303133;
 }
+.stat-value.pending { color: #e6a23c; }
 
 .stat-label {
   font-size: 14px;

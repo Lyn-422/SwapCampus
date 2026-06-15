@@ -38,8 +38,16 @@ export const useAuthStore = defineStore('auth', () => {
     return data
   }
 
-  async function register(form) {
-    const res = await registerApi(form)
+  async function register({ username, password, password_confirm, email, nickname, campus, studentIdCardFile }) {
+    const fd = new FormData()
+    fd.append('username', username)
+    fd.append('password', password)
+    fd.append('password_confirm', password_confirm)
+    if (email) fd.append('email', email)
+    if (nickname) fd.append('nickname', nickname)
+    if (campus) fd.append('campus', campus)
+    if (studentIdCardFile) fd.append('student_id_card', studentIdCardFile)
+    const res = await registerApi(fd)
     return res.data
   }
 

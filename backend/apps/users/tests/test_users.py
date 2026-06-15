@@ -8,9 +8,13 @@
 - 信用分变更逻辑
 """
 
+import io
+
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+from PIL import Image as PILImage
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -26,6 +30,17 @@ def api_client():
     return APIClient()
 
 
+def _make_test_image():
+    """Generate a minimal valid JPEG for testing."""
+    buf = io.BytesIO()
+    img = PILImage.new("RGB", (100, 100), color=(255, 0, 0))
+    img.save(buf, "JPEG")
+    buf.seek(0)
+    return SimpleUploadedFile(
+        "student_card.jpg", buf.read(), content_type="image/jpeg",
+    )
+
+
 @pytest.fixture
 def user_data():
     return {
@@ -35,6 +50,7 @@ def user_data():
         "email": "test@bjfu.edu.cn",
         "nickname": "测试用户",
         "campus": "校本部",
+        "student_id_card": _make_test_image(),
     }
 
 

@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 import { studentIdRule, passwordRule } from '@/utils/validators'
+import ImageUploader from '@/components/common/ImageUploader.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -11,6 +12,8 @@ const auth = useAuthStore()
 const formRef = ref(null)
 const loading = ref(false)
 const showPasswordTips = ref(false)
+const studentIdCardFile = ref(null)
+const studentCardFiles = ref([])
 
 const form = reactive({
   username: '',
@@ -20,6 +23,26 @@ const form = reactive({
   nickname: '',
   campus: '',
 })
+
+const studentCardRule = {
+  required: true,
+  validator: (rule, value, callback) => {
+    if (!studentIdCardFile.value) {
+      callback(new Error('请上传学生证照片'))
+    } else {
+      callback()
+    }
+  },
+  trigger: 'change',
+}
+
+function handleStudentCardChange(files) {
+  studentCardFiles.value = files
+  studentIdCardFile.value = files.length > 0 ? files[0] : null
+  if (formRef.value) {
+    formRef.value.validateField('student_id_card').catch(() => {})
+  }
+}
 
 const passwordConfirmRule = {
   required: true,
@@ -39,8 +62,8 @@ async function handleRegister() {
 
   loading.value = true
   try {
-    await auth.register({ ...form })
-    ElMessage.success('注册成功，请登录')
+    await auth.register({ ...form, studentIdCardFile: studentIdCardFile.value })
+    ElMessage.success('注册已提交，请等待管理员审核')
     router.push('/login')
   } catch {
     // handled by interceptor
@@ -123,6 +146,17 @@ async function handleRegister() {
             placeholder="用于找回密码"
             type="email"
           />
+        </el-form-item>
+
+        <el-form-item label="学生证照片" prop="student_id_card" :rules="[studentCardRule]">
+          <ImageUploader
+            v-model="studentCardFiles"
+            :max="1"
+            @update:model-value="handleStudentCardChange"
+          />
+          <div class="upload-hint">
+            请上传清晰的学生证照片用于身份验证，注册后需管理员审核通过方可登录
+          </div>
         </el-form-item>
 
         <el-form-item>
@@ -215,6 +249,13 @@ async function handleRegister() {
 
 .tips-content p {
   margin: 0;
+  line-height: 1.5;
+}
+
+.upload-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #909399;
   line-height: 1.5;
 }
 </style>

@@ -49,6 +49,7 @@ class DashboardView(APIView):
             return err
 
         total_users = User.objects.filter(is_active=True).count()
+        pending_registrations = User.objects.filter(status=User.AccountStatus.PENDING).count()
         active_products = Product.objects.filter(status=Product.Status.ACTIVE).count()
         pending_products = Product.objects.filter(status=Product.Status.PENDING).count()
         pending_orders = Order.objects.filter(status=Order.Status.PENDING).count()
@@ -69,6 +70,7 @@ class DashboardView(APIView):
 
         data = {
             "total_users": total_users,
+            "pending_registrations": pending_registrations,
             "active_products": active_products,
             "pending_products": pending_products,
             "pending_orders": pending_orders,
@@ -369,13 +371,16 @@ class AdminUserListView(APIView):
 
         search = request.query_params.get("search", "")
         is_active = request.query_params.get("is_active", "")
+        status_filter = request.query_params.get("status", "")
         page = int(request.query_params.get("page", 1))
         page_size = int(request.query_params.get("page_size", 20))
 
         qs = User.objects.order_by("-date_joined")
         if search:
             qs = qs.filter(Q(username__icontains=search) | Q(nickname__icontains=search))
-        if is_active == "true":
+        if status_filter in dict(User.AccountStatus.choices):
+            qs = qs.filter(status=status_filter)
+        elif is_active == "true":
             qs = qs.filter(is_active=True)
         elif is_active == "false":
             qs = qs.filter(is_active=False)
@@ -385,6 +390,9 @@ class AdminUserListView(APIView):
 
         users_data = []
         for u in qs:
+            student_card_url = None
+            if u.student_id_card:
+                student_card_url = request.build_absolute_uri(u.student_id_card.url)
             users_data.append({
                 "id": str(u.id),
                 "username": u.username,
@@ -394,6 +402,9 @@ class AdminUserListView(APIView):
                 "credit_score": u.credit_score,
                 "is_active": u.is_active,
                 "is_staff": u.is_staff,
+                "status": u.status,
+                "student_id_card_url": student_card_url,
+                "rejection_reason": u.rejection_reason,
                 "date_joined": u.date_joined,
             })
 
@@ -433,7 +444,8 @@ class AdminUserBanView(APIView):
 
         is_active = request.data.get("is_active", False)
         user.is_active = is_active
-        user.save(update_fields=["is_active"])
+        user.status = User.AccountStatus.BANNED if not is_active else User.AccountStatus.ACTIVE
+        user.save(update_fields=["is_active", "status"])
 
         # 封禁联动：下架商品 + 取消订单 + 通知交易对方
         if not is_active:
@@ -487,4 +499,140 @@ class AdminUserBanView(APIView):
         return Response(build_success_response({
             "id": str(user.id),
             "is_active": user.is_active,
+            "status": user.status,
+        }))
+
+
+# ═══════════════════════════════════════════════════════════
+# 注册审核
+# ═══════════════════════════════════════════════════════════
+class AdminPendingUserListView(APIView):
+    """待审核用户列表.
+
+    GET /api/admin/users/pending/
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        err = _require_staff(request)
+        if err:
+            return err
+
+        search = request.query_params.get("search", "")
+        page = int(request.query_params.get("page", 1))
+        page_size = int(request.query_params.get("page_size", 20))
+
+        qs = User.objects.filter(status=User.AccountStatus.PENDING).order_by("-date_joined")
+        if search:
+            qs = qs.filter(Q(username__icontains=search) | Q(nickname__icontains=search))
+
+        total = qs.count()
+        qs = qs[(page - 1) * page_size : page * page_size]
+
+        users_data = []
+        for u in qs:
+            student_card_url = None
+            if u.student_id_card:
+                student_card_url = request.build_absolute_uri(u.student_id_card.url)
+            users_data.append({
+                "id": str(u.id),
+                "username": u.username,
+                "nickname": u.get_display_name(),
+                "email": u.email,
+                "campus": u.campus,
+                "student_id_card_url": student_card_url,
+                "date_joined": u.date_joined,
+            })
+
+        return Response(build_success_response({
+            "users": users_data,
+            "pagination": {"page": page, "page_size": page_size, "total": total},
+        }))
+
+
+class AdminApproveUserView(APIView):
+    """通过注册审核.
+
+    POST /api/admin/users/<id>/approve/
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        err = _require_staff(request)
+        if err:
+            return err
+
+        try:
+            user = User.objects.get(id=id, status=User.AccountStatus.PENDING)
+        except User.DoesNotExist:
+            return Response(
+                {"success": False, "data": None, "error": {"message": "待审核用户不存在"}},
+                status=404,
+            )
+
+        user.status = User.AccountStatus.ACTIVE
+        user.is_active = True
+        user.rejection_reason = ""
+        user.save(update_fields=["status", "is_active", "rejection_reason"])
+
+        create_notification(
+            recipient=user,
+            ntype="system",
+            title="注册审核通过",
+            content="你的注册申请已通过管理员审核，现在可以开始使用 SwapCampus 了！",
+        )
+
+        return Response(build_success_response({
+            "id": str(user.id),
+            "status": user.status,
+            "is_active": user.is_active,
+        }))
+
+
+class AdminRejectUserView(APIView):
+    """拒绝注册申请.
+
+    POST /api/admin/users/<id>/reject/
+    body: {"reason": "学生证照片不清晰"}
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        err = _require_staff(request)
+        if err:
+            return err
+
+        reason = request.data.get("reason", "").strip()
+        if not reason:
+            return Response(
+                {"success": False, "data": None, "error": {"message": "请填写拒绝原因"}},
+                status=400,
+            )
+
+        try:
+            user = User.objects.get(id=id, status=User.AccountStatus.PENDING)
+        except User.DoesNotExist:
+            return Response(
+                {"success": False, "data": None, "error": {"message": "待审核用户不存在"}},
+                status=404,
+            )
+
+        user.status = User.AccountStatus.REJECTED
+        user.is_active = False
+        user.rejection_reason = reason
+        user.save(update_fields=["status", "is_active", "rejection_reason"])
+
+        create_notification(
+            recipient=user,
+            ntype="system",
+            title="注册审核未通过",
+            content=f"你的注册申请未通过审核，原因：{reason}。请重新注册。",
+        )
+
+        return Response(build_success_response({
+            "id": str(user.id),
+            "status": user.status,
         }))

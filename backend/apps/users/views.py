@@ -8,6 +8,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView as BaseTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView as BaseTokenRefreshView
@@ -43,25 +44,50 @@ class TokenObtainPairView(BaseTokenObtainPairView):
     """
 
     def post(self, request, *args, **kwargs):
-        # 先检查用户是否被封禁，以便返回明确的错误信息
         username = request.data.get("username", "")
         if username:
             try:
                 user = User.objects.get(username=username)
                 if not user.is_active:
-                    return Response(
-                        {
-                            "success": False,
-                            "data": None,
-                            "error": {
-                                "code": "ACCOUNT_DISABLED",
-                                "message": "您的账号已被管理员封禁，请联系管理员解封",
+                    if user.status == User.AccountStatus.PENDING:
+                        return Response(
+                            {
+                                "success": False,
+                                "data": None,
+                                "error": {
+                                    "code": "ACCOUNT_PENDING",
+                                    "message": "您的账号正在审核中，请耐心等待管理员审核",
+                                },
                             },
-                        },
-                        status=403,
-                    )
+                            status=403,
+                        )
+                    elif user.status == User.AccountStatus.REJECTED:
+                        reason = user.rejection_reason or "未提供原因"
+                        return Response(
+                            {
+                                "success": False,
+                                "data": None,
+                                "error": {
+                                    "code": "ACCOUNT_REJECTED",
+                                    "message": f"您的注册申请已被拒绝：{reason}",
+                                },
+                            },
+                            status=403,
+                        )
+                    else:
+                        return Response(
+                            {
+                                "success": False,
+                                "data": None,
+                                "error": {
+                                    "code": "ACCOUNT_DISABLED",
+                                    "message": "您的账号已被管理员封禁，请联系管理员解封",
+                                },
+                            },
+                            status=403,
+                        )
             except User.DoesNotExist:
-                pass  # 用户不存在，交给 SimpleJWT 返回统一错误
+                pass
 
         try:
             response = super().post(request, *args, **kwargs)
@@ -111,18 +137,21 @@ class RegisterView(APIView):
     """
 
     permission_classes = [AllowAny]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     @extend_schema(
         request=RegisterSerializer,
         responses={201: UserSerializer},
-        description="使用学号注册新用户",
+        description="使用学号注册新用户（需上传学生证照片）",
     )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response(
-            build_success_response(UserSerializer(user).data),
+            build_success_response(
+                data={"id": str(user.id), "username": user.username, "message": "注册已提交，请等待管理员审核"},
+            ),
             status=status.HTTP_201_CREATED,
         )
 

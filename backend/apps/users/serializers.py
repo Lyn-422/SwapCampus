@@ -58,6 +58,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             "email",
             "nickname",
             "campus",
+            "student_id_card",
         ]
         extra_kwargs = {
             "username": {
@@ -68,7 +69,20 @@ class RegisterSerializer(serializers.ModelSerializer):
             "email": {"required": False},
             "nickname": {"required": False},
             "campus": {"required": False},
+            "student_id_card": {"required": True},
         }
+
+    def validate_student_id_card(self, value):
+        max_size_mb = 5
+        if value.size > max_size_mb * 1024 * 1024:
+            raise serializers.ValidationError(
+                f"学生证照片不能超过 {max_size_mb} MB"
+            )
+        if hasattr(value, "content_type") and value.content_type not in (
+            "image/jpeg", "image/png", "image/webp",
+        ):
+            raise serializers.ValidationError("仅支持 JPEG、PNG、WebP 格式的图片")
+        return value
 
     def validate_username(self, value):
         """校验学号格式：8-9 位数字."""
@@ -85,11 +99,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        """使用 create_user 创建用户（密码自动哈希）."""
         password = validated_data.pop("password")
-        user = User.objects.create_user(**validated_data)
+        student_id_card = validated_data.pop("student_id_card", None)
+        user = User.objects.create_user(
+            **validated_data,
+            is_active=False,
+            status=User.AccountStatus.PENDING,
+        )
         user.set_password(password)
-        user.save()
+        if student_id_card:
+            user.student_id_card = student_id_card
+            user.save(update_fields=["student_id_card"])
         return user
 
 
@@ -177,6 +197,28 @@ class UserUpdateSerializer(UserProfileSerializer):
     """
 
     pass
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    """管理员用户详情序列化器（含学生证、状态等敏感字段）."""
+
+    student_id_card_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            "id", "username", "nickname", "email", "campus",
+            "credit_score", "is_active", "is_staff", "status",
+            "student_id_card_url", "rejection_reason", "date_joined",
+        ]
+
+    def get_student_id_card_url(self, obj):
+        if obj.student_id_card:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.student_id_card.url)
+            return obj.student_id_card.url
+        return None
 
 
 # ═══════════════════════════════════════════════════════════

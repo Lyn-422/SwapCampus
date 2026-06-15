@@ -30,7 +30,20 @@ async function handleLogin() {
     router.push(redirect)
   } catch (err) {
     const errorData = err?.response?.data?.error
-    if (errorData?.code === 'ACCOUNT_DISABLED') {
+    const code = errorData?.code
+    if (code === 'ACCOUNT_PENDING') {
+      ElMessageBox.alert(
+        '您的账号正在审核中，请耐心等待管理员审核。',
+        '账号审核中',
+        { confirmButtonText: '知道了', type: 'warning', center: true },
+      )
+    } else if (code === 'ACCOUNT_REJECTED') {
+      ElMessageBox.alert(
+        errorData?.message || '您的注册申请已被拒绝',
+        '注册被拒绝',
+        { confirmButtonText: '知道了', type: 'error', center: true },
+      )
+    } else if (code === 'ACCOUNT_DISABLED') {
       ElMessageBox.alert(
         '您的账号已被管理员封禁，如有疑问请联系管理员申诉。',
         '账号已封禁',

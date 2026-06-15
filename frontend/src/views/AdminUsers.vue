@@ -1,19 +1,39 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getAdminUsers, banUser } from '@/api/admin'
+import { useRouter } from 'vue-router'
+import { getAdminUsers, banUser, approveUser, rejectUser } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
+const router = useRouter()
 const loading = ref(false)
 const users = ref([])
 const pagination = ref({ page: 1, page_size: 20, total: 0 })
-const filters = ref({ search: '', is_active: '' })
+const filters = ref({ search: '', is_active: '', status: '' })
+
+const rejectDialogVisible = ref(false)
+const rejectTarget = ref(null)
+const rejectReason = ref('')
 
 const creditLevelMap = {
   excellent: { type: 'success', label: '优秀' },
   good: { type: '', label: '良好' },
   fair: { type: 'warning', label: '一般' },
   poor: { type: 'danger', label: '较差' },
+}
+
+const statusLabels = {
+  pending: '待审核',
+  active: '正常',
+  rejected: '已拒绝',
+  banned: '已封禁',
+}
+
+const statusTagTypes = {
+  pending: 'warning',
+  active: 'success',
+  rejected: 'info',
+  banned: 'danger',
 }
 
 function creditLevel(score) {
@@ -26,12 +46,17 @@ function creditLevel(score) {
 async function fetchUsers() {
   loading.value = true
   try {
-    const res = await getAdminUsers({
+    const params = {
       search: filters.value.search,
-      is_active: filters.value.is_active,
       page: pagination.value.page,
       page_size: pagination.value.page_size,
-    })
+    }
+    if (filters.value.status) {
+      params.status = filters.value.status
+    } else {
+      params.is_active = filters.value.is_active
+    }
+    const res = await getAdminUsers(params)
     const data = res.data.data || res.data
     users.value = data.users
     pagination.value = data.pagination
@@ -39,6 +64,34 @@ async function fetchUsers() {
     ElMessage.error('加载失败')
   } finally {
     loading.value = false
+  }
+}
+
+async function handleApprove(user) {
+  try {
+    await approveUser(user.id)
+    ElMessage.success('审核通过')
+    fetchUsers()
+  } catch {
+    ElMessage.error('操作失败')
+  }
+}
+
+function showRejectDialog(user) {
+  rejectTarget.value = user
+  rejectReason.value = ''
+  rejectDialogVisible.value = true
+}
+
+async function confirmReject() {
+  if (!rejectReason.value.trim()) return
+  try {
+    await rejectUser(rejectTarget.value.id, rejectReason.value.trim())
+    ElMessage.success('已拒绝该用户注册')
+    rejectDialogVisible.value = false
+    fetchUsers()
+  } catch {
+    ElMessage.error('操作失败')
   }
 }
 
@@ -56,6 +109,12 @@ async function handleBan(user) {
   } catch {
     // 取消
   }
+}
+
+function resetFilters() {
+  filters.value = { search: '', is_active: '', status: '' }
+  pagination.value.page = 1
+  fetchUsers()
 }
 
 function onPageChange(page) {
@@ -86,12 +145,19 @@ onMounted(fetchUsers)
           @keyup.enter="fetchUsers"
           style="width: 240px"
         />
-        <el-select v-model="filters.is_active" @change="fetchUsers" style="width: 130px">
+        <el-select
+          v-model="filters.status"
+          @change="filters.is_active = ''; fetchUsers()"
+          style="width: 130px"
+        >
           <el-option label="全部" value="" />
-          <el-option label="正常" value="true" />
-          <el-option label="已封禁" value="false" />
+          <el-option label="待审核" value="pending" />
+          <el-option label="正常" value="active" />
+          <el-option label="已拒绝" value="rejected" />
+          <el-option label="已封禁" value="banned" />
         </el-select>
         <el-button type="primary" @click="fetchUsers">查询</el-button>
+        <el-button @click="resetFilters">重置</el-button>
       </div>
     </el-card>
 
@@ -121,9 +187,21 @@ onMounted(fetchUsers)
         </el-table-column>
         <el-table-column label="状态" width="90" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.is_active ? 'success' : 'danger'" size="small">
-              {{ row.is_active ? '正常' : '已封禁' }}
+            <el-tag :type="statusTagTypes[row.status] || 'info'" size="small">
+              {{ statusLabels[row.status] || row.status }}
             </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="学生证" width="80" align="center">
+          <template #default="{ row }">
+            <el-image
+              v-if="row.student_id_card_url"
+              :src="row.student_id_card_url"
+              :preview-src-list="[row.student_id_card_url]"
+              fit="cover"
+              style="width:50px;height:35px;border-radius:4px;cursor:pointer"
+            />
+            <span v-else>—</span>
           </template>
         </el-table-column>
         <el-table-column label="角色" width="80" align="center">
@@ -137,16 +215,26 @@ onMounted(fetchUsers)
             {{ new Date(row.date_joined).toLocaleString('zh-CN') }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" align="center" fixed="right">
+        <el-table-column label="操作" width="160" align="center" fixed="right">
           <template #default="{ row }">
-            <el-button
-              v-if="!row.is_staff"
-              :type="row.is_active ? 'danger' : 'success'"
-              size="small"
-              @click="handleBan(row)"
-            >
-              {{ row.is_active ? '封禁' : '解封' }}
-            </el-button>
+            <template v-if="row.status === 'pending'">
+              <el-button type="success" size="small" @click="handleApprove(row)">
+                通过
+              </el-button>
+              <el-button type="danger" size="small" @click="showRejectDialog(row)">
+                拒绝
+              </el-button>
+            </template>
+            <template v-else>
+              <el-button
+                v-if="!row.is_staff"
+                :type="row.is_active ? 'danger' : 'success'"
+                size="small"
+                @click="handleBan(row)"
+              >
+                {{ row.is_active ? '封禁' : '解封' }}
+              </el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
@@ -162,6 +250,25 @@ onMounted(fetchUsers)
         />
       </div>
     </el-card>
+
+    <el-dialog v-model="rejectDialogVisible" title="拒绝注册申请" width="450px">
+      <el-form @submit.prevent="confirmReject">
+        <el-form-item label="拒绝原因" required>
+          <el-input
+            v-model="rejectReason"
+            type="textarea"
+            :rows="3"
+            placeholder="请填写拒绝原因（如：学生证照片不清晰）"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="rejectDialogVisible = false">取消</el-button>
+        <el-button type="danger" :disabled="!rejectReason.trim()" @click="confirmReject">
+          确认拒绝
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
