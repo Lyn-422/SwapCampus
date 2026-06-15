@@ -504,6 +504,73 @@ class AdminUserBanView(APIView):
 
 
 # ═══════════════════════════════════════════════════════════
+# 订单管理
+# ═══════════════════════════════════════════════════════════
+class AdminOrderListView(APIView):
+    """管理员订单列表.
+
+    GET /api/admin/orders/
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        err = _require_staff(request)
+        if err:
+            return err
+
+        status_filter = request.query_params.get("status", "")
+        search = request.query_params.get("search", "")
+        page = int(request.query_params.get("page", 1))
+        page_size = int(request.query_params.get("page_size", 20))
+
+        qs = Order.objects.select_related("buyer", "seller", "product")
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        if search:
+            qs = qs.filter(
+                Q(product__title__icontains=search)
+                | Q(buyer__username__icontains=search)
+                | Q(seller__username__icontains=search)
+            )
+
+        total = qs.count()
+        qs = qs.order_by("-created_at")[(page - 1) * page_size : page * page_size]
+
+        orders_data = []
+        for o in qs:
+            orders_data.append({
+                "id": str(o.id),
+                "status": o.status,
+                "status_display": o.get_status_display(),
+                "buyer": {
+                    "id": str(o.buyer.id),
+                    "username": o.buyer.username,
+                    "nickname": o.buyer.get_display_name(),
+                },
+                "seller": {
+                    "id": str(o.seller.id),
+                    "username": o.seller.username,
+                    "nickname": o.seller.get_display_name(),
+                },
+                "product": {
+                    "id": str(o.product.id),
+                    "title": o.product.title,
+                },
+                "meet_time": o.meet_time,
+                "meet_location": o.meet_location,
+                "cancel_reason": o.cancel_reason,
+                "completed_at": o.completed_at,
+                "created_at": o.created_at,
+            })
+
+        return Response(build_success_response({
+            "orders": orders_data,
+            "pagination": {"page": page, "page_size": page_size, "total": total},
+        }))
+
+
+# ═══════════════════════════════════════════════════════════
 # 注册审核
 # ═══════════════════════════════════════════════════════════
 class AdminPendingUserListView(APIView):

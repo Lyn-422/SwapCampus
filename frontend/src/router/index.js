@@ -83,6 +83,11 @@ const routes = [
     meta: { layout: 'default', requiresAuth: true, requiresStaff: true },
   },
   {
+    path: '/admin/orders',
+    component: () => import('@/views/AdminOrders.vue'),
+    meta: { layout: 'default', requiresAuth: true, requiresStaff: true },
+  },
+  {
     path: '/admin/users',
     component: () => import('@/views/AdminUsers.vue'),
     meta: { layout: 'default', requiresAuth: true, requiresStaff: true },

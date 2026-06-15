@@ -26,6 +26,11 @@ export function handleReport(id, data) {
   return client.post(`/admin/reports/${id}/handle/`, data)
 }
 
+// 订单管理
+export function getAdminOrders(params = {}) {
+  return client.get('/admin/orders/', { params })
+}
+
 // 用户管理
 export function getAdminUsers(params = {}) {
   return client.get('/admin/users/', { params })

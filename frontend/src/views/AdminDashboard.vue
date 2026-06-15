@@ -88,7 +88,7 @@ onMounted(fetchDashboard)
         </div>
       </el-card>
 
-      <el-card class="stat-card">
+      <el-card class="stat-card clickable" @click="router.push('/admin/orders')">
         <div class="stat-inner">
           <div class="stat-icon orders">
             <el-icon :size="28"><Document /></el-icon>
