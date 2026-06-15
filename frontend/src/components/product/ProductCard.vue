@@ -18,51 +18,41 @@ function goDetail() {
 </script>
 
 <template>
-  <article
-    class="product-card"
-    @click="goDetail"
-  >
-    <div class="card-image-wrap">
+  <article class="card" @click="goDetail">
+    <div class="card-img">
       <el-image
         v-if="product.cover_image"
         :src="product.cover_image"
         fit="cover"
-        class="card-image"
+        class="card-img-el"
         lazy
       >
         <template #error>
-          <div class="image-placeholder">
-            <el-icon :size="36"><component :is="'Picture'" /></el-icon>
+          <div class="card-img-fallback">
+            <el-icon :size="32" color="#94a3b8"><component :is="'Picture'" /></el-icon>
           </div>
         </template>
       </el-image>
-      <div v-else class="image-placeholder">
-        <el-icon :size="36"><component :is="'Picture'" /></el-icon>
+      <div v-else class="card-img-fallback">
+        <el-icon :size="32" color="#94a3b8"><component :is="'Picture'" /></el-icon>
       </div>
 
-      <el-tag
-        v-if="product.condition"
-        :type="conditionColors[product.condition] || 'info'"
-        size="small"
-        class="condition-tag"
-        effect="plain"
-      >
+      <span v-if="product.condition" class="card-badge" :class="`badge--${product.condition}`">
         {{ conditionLabels[product.condition] || product.condition_display }}
-      </el-tag>
+      </span>
 
-      <el-button
-        class="fav-btn"
-        :class="{ 'is-fav': product.is_favorited }"
-        :icon="product.is_favorited ? 'StarFilled' : 'Star'"
-        circle
-        size="small"
+      <button
+        class="card-fav"
+        :class="{ 'is-active': product.is_favorited }"
         @click.stop="$emit('toggleFavorite', product)"
-      />
+      >
+        <el-icon :size="14"><component :is="product.is_favorited ? 'StarFilled' : 'Star'" /></el-icon>
+      </button>
 
-      <div v-if="product.status !== 'active'" class="status-overlay">
-        <el-tag type="info" size="large" effect="plain">
+      <div v-if="product.status !== 'active'" class="card-overlay">
+        <span class="overlay-tag">
           {{ product.status === 'sold' ? '已售出' : product.status === 'hidden' ? '已下架' : product.status === 'pending' ? '审核中' : product.status === 'banned' ? '违规下架' : '已预定' }}
-        </el-tag>
+        </span>
       </div>
     </div>
 
@@ -71,18 +61,15 @@ function goDetail() {
 
       <div class="card-price-row">
         <span class="card-price">{{ formatPrice(product.price) }}</span>
-        <span v-if="product.original_price" class="card-original-price">
+        <span v-if="product.original_price" class="card-original">
           {{ formatPrice(product.original_price) }}
         </span>
       </div>
 
-      <div class="card-meta">
+      <div class="card-footer">
         <div class="card-seller">
-          <el-avatar :size="20" class="seller-avatar">
-            {{ product.seller?.nickname?.[0] || '?' }}
-          </el-avatar>
-          <span>{{ product.seller?.nickname }}</span>
-          <el-tag v-if="product.seller?.is_trusted_seller" size="small" type="success" effect="plain" class="trusted-tag">可信卖家</el-tag>
+          <span class="seller-avatar">{{ product.seller?.nickname?.[0] || '?' }}</span>
+          <span class="seller-name">{{ product.seller?.nickname }}</span>
         </div>
         <span class="card-time">{{ formatTime(product.created_at) }}</span>
       </div>
@@ -91,77 +78,115 @@ function goDetail() {
 </template>
 
 <style scoped>
-.product-card {
+.card {
   cursor: pointer;
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.3s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-green);
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: #cbd5e1;
 }
 
-.product-card:active {
-  transform: translateY(-2px) scale(0.99);
+.card:active {
+  transform: translateY(-1px);
 }
 
-.card-image-wrap {
+.card-img {
   position: relative;
   width: 100%;
-  padding-top: 75%;
+  aspect-ratio: 4/3;
   overflow: hidden;
-  background: #f0f0f0;
+  background: #f1f5f9;
 }
 
-.card-image {
-  position: absolute;
-  top: 0;
-  left: 0;
+.card-img-el {
   width: 100%;
   height: 100%;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.product-card:hover .card-image {
-  transform: scale(1.05);
+.card:hover .card-img-el {
+  transform: scale(1.06);
 }
 
-.image-placeholder {
-  position: absolute;
-  top: 0;
-  left: 0;
+.card-img-fallback {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-  color: #a5d6a7;
+  background: #f1f5f9;
 }
 
-.condition-tag {
+.card-badge {
   position: absolute;
   top: 10px;
   left: 10px;
-  backdrop-filter: blur(4px);
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
+  color: var(--text-regular);
 }
 
-.status-overlay {
+.badge--new { background: #eef2ff; color: #4f46e5; }
+.badge--like_new { background: #ecfdf5; color: #059669; }
+.badge--good { background: #eff6ff; color: #2563eb; }
+.badge--fair { background: #fffbeb; color: #d97706; }
+.badge--worn { background: #fef2f2; color: #dc2626; }
+
+.card-fav {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(2px);
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  color: #94a3b8;
+  transition: all 0.2s;
+}
+
+.card-fav:hover {
+  background: #fff;
+  color: #6366f1;
+}
+
+.card-fav.is-active {
+  color: #f59e0b;
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay-tag {
+  padding: 6px 16px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .card-body {
@@ -172,12 +197,13 @@ function goDetail() {
   font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin-bottom: 10px;
-  color: var(--text-primary);
 }
 
 .card-price-row {
@@ -191,20 +217,19 @@ function goDetail() {
   font-size: 18px;
   font-weight: 700;
   color: var(--color-price);
+  letter-spacing: -0.02em;
 }
 
-.card-original-price {
+.card-original {
   font-size: 13px;
   color: var(--text-secondary);
   text-decoration: line-through;
 }
 
-.card-meta {
+.card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
-  color: var(--text-secondary);
 }
 
 .card-seller {
@@ -214,23 +239,29 @@ function goDetail() {
 }
 
 .seller-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seller-name {
   font-size: 12px;
+  color: var(--text-secondary);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.trusted-tag {
-  font-size: 11px;
-}
-
-.fav-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(4px);
-}
-
-.fav-btn.is-fav {
-  color: #f5a623;
+.card-time {
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 </style>

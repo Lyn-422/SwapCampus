@@ -21,9 +21,6 @@ async function loadProducts() {
 function handlePageChange(page) {
   currentPage.value = page
   loadProducts()
-}
-
-function scrollToProducts() {
   productsRef.value?.scrollIntoView({ behavior: 'smooth' })
 }
 
@@ -36,30 +33,43 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="page-container">
+  <div class="home">
     <!-- Hero -->
     <section class="hero">
-      <div class="hero-text">
-        <h1 class="hero-headline">校园闲置，安心流转</h1>
+      <div class="hero-bg">
+        <div class="hero-blob hero-blob--1"></div>
+        <div class="hero-blob hero-blob--2"></div>
+        <div class="hero-blob hero-blob--3"></div>
+      </div>
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Beijing Forestry University
+        </div>
+        <h1 class="hero-title">
+          闲置有<span class="highlight">新</span>生，<br/>校园有<span class="highlight">信</span>任
+        </h1>
         <p class="hero-desc">
-          北京林业大学师生专属的 C2C 二手交易平台。实名认证与面交担保，让每一笔交易都放心。
+          北京林业大学专属 C2C 二手交易平台。学号实名认证与面交担保机制，让校园闲置流转更安全、更放心。
         </p>
         <div class="hero-actions">
           <template v-if="auth.isLoggedIn">
-            <el-button type="success" size="large" round @click="$router.push('/publish')">
+            <button class="btn-primary" @click="$router.push('/publish')">
               发布商品
-            </el-button>
-            <el-button size="large" round class="btn-outline" @click="scrollToProducts">
+              <span class="btn-arrow">-></span>
+            </button>
+            <button class="btn-ghost" @click="productsRef?.scrollIntoView({ behavior: 'smooth' })">
               浏览商品
-            </el-button>
+            </button>
           </template>
           <template v-else>
-            <el-button type="success" size="large" round @click="$router.push('/register')">
-              注册账号
-            </el-button>
-            <el-button size="large" round class="btn-outline" @click="scrollToProducts">
-              浏览商品
-            </el-button>
+            <button class="btn-primary" @click="$router.push('/register')">
+              立即注册
+              <span class="btn-arrow">-></span>
+            </button>
+            <button class="btn-ghost" @click="productsRef?.scrollIntoView({ behavior: 'smooth' })">
+              先看看
+            </button>
           </template>
         </div>
         <div class="hero-stats">
@@ -67,51 +77,56 @@ onMounted(async () => {
             <span class="stat-number">{{ productsStore.total || 0 }}</span>
             <span class="stat-label">在售好物</span>
           </div>
+          <div class="stat-divider"></div>
           <div class="hero-stat">
-            <span class="stat-number">实名</span>
-            <span class="stat-label">学号认证</span>
+            <span class="stat-number">100%</span>
+            <span class="stat-label">实名认证</span>
           </div>
+          <div class="stat-divider"></div>
           <div class="hero-stat">
             <span class="stat-number">面交</span>
-            <span class="stat-label">安全担保</span>
+            <span class="stat-label">安全模式</span>
           </div>
         </div>
-      </div>
-      <div class="hero-visual">
-        <img
-          src="/hero-campus.webp"
-          alt="北京林业大学校园"
-          class="hero-image"
-        />
-        <div class="hero-visual-glow"></div>
       </div>
     </section>
 
     <!-- Categories -->
-    <section v-if="productsStore.categories.length > 0" class="category-section">
-      <h2 class="section-title">浏览分类</h2>
-      <div class="category-list">
-        <div
+    <section v-if="productsStore.categories.length > 0" class="section">
+      <div class="section-header">
+        <h2 class="section-title">浏览分类</h2>
+      </div>
+      <div class="category-scroll">
+        <button
           v-for="cat in productsStore.categories"
           :key="cat.id"
-          class="category-item"
+          class="category-chip"
           @click="$router.push({ path: '/search', query: { category: cat.id } })"
         >
-          <span class="cat-icon">{{ cat.icon || '📦' }}</span>
-          <span class="cat-name">{{ cat.name }}</span>
-        </div>
+          <span class="chip-icon">
+            <el-icon :size="16"><component :is="'Folder'" /></el-icon>
+          </span>
+          {{ cat.name }}
+        </button>
       </div>
     </section>
 
-    <!-- Product List -->
-    <section ref="productsRef" class="products-section">
+    <!-- Product Grid -->
+    <section ref="productsRef" class="section">
       <div class="section-header">
         <h2 class="section-title">最新发布</h2>
+        <span class="section-sub">发现校园好物</span>
       </div>
 
-      <div v-if="productsStore.loading" class="loading-state">
-        <el-skeleton :rows="3" animated />
-        <el-skeleton :rows="3" animated style="margin-top: 20px" />
+      <div v-if="productsStore.loading" class="loading-grid">
+        <div v-for="n in 6" :key="n" class="skeleton-card">
+          <div class="skeleton-img"></div>
+          <div class="skeleton-body">
+            <div class="skeleton-line w-3/4"></div>
+            <div class="skeleton-line w-1/2"></div>
+            <div class="skeleton-line w-1/3"></div>
+          </div>
+        </div>
       </div>
 
       <div v-else-if="productsStore.products.length > 0">
@@ -136,9 +151,9 @@ onMounted(async () => {
       </div>
 
       <div v-else class="empty-state">
-        <el-icon :size="56"><component :is="'Box'" /></el-icon>
-        <p>暂无在售商品，去发布第一个吧</p>
-        <el-button type="success" round @click="$router.push('/publish')">
+        <el-icon :size="48" color="#cbd5e1"><component :is="'Shop'" /></el-icon>
+        <p>还没有人在售商品，来做第一个吧</p>
+        <el-button type="primary" @click="$router.push('/publish')">
           发布商品
         </el-button>
       </div>
@@ -147,202 +162,315 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* Hero */
+/* ===== Hero ===== */
 .hero {
-  display: flex;
+  position: relative;
+  padding: 72px 0 64px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 40%, #f8fafc 100%);
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+}
+
+.hero-blob--1 {
+  width: 500px;
+  height: 500px;
+  top: -200px;
+  right: -100px;
+  background: radial-gradient(circle, #6366f1, #8b5cf6);
+}
+
+.hero-blob--2 {
+  width: 400px;
+  height: 400px;
+  bottom: -100px;
+  left: -80px;
+  background: radial-gradient(circle, #f43f5e, #ec4899);
+}
+
+.hero-blob--3 {
+  width: 300px;
+  height: 300px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #3b82f6, #6366f1);
+  opacity: 0.15;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.hero-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 48px;
-  padding: 48px 0 32px;
-  margin-bottom: 24px;
-  min-height: 360px;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 28px;
+  letter-spacing: 0.02em;
 }
 
-.hero-text {
-  flex: 1;
-  max-width: 540px;
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #818cf8;
+  animation: pulse-dot 2s ease-in-out infinite;
 }
 
-.hero-headline {
-  font-size: 40px;
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.hero-title {
+  font-size: 52px;
   font-weight: 800;
-  color: var(--color-brand-dark);
-  line-height: 1.25;
-  margin-bottom: 16px;
-  letter-spacing: -0.5px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: #f1f5f9;
+  margin-bottom: 20px;
+}
+
+.highlight {
+  background: linear-gradient(135deg, #818cf8, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .hero-desc {
-  font-size: 16px;
-  color: var(--text-regular);
+  font-size: 17px;
   line-height: 1.7;
-  margin-bottom: 28px;
-  max-width: 440px;
+  color: #94a3b8;
+  max-width: 520px;
+  margin: 0 auto 36px;
 }
 
 .hero-actions {
   display: flex;
   gap: 12px;
-  margin-bottom: 32px;
+  justify-content: center;
+  margin-bottom: 48px;
 }
 
-.btn-outline {
-  color: var(--color-brand-dark);
-  border-color: var(--color-brand);
-  font-weight: 500;
-}
-
-.btn-outline:hover {
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: #6366f1;
   color: #fff;
-  background: var(--color-brand);
-  border-color: var(--color-brand);
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+}
+
+.btn-primary:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+}
+
+.btn-arrow {
+  font-size: 14px;
+  transition: transform 0.2s;
+}
+
+.btn-primary:hover .btn-arrow {
+  transform: translateX(3px);
+}
+
+.btn-ghost {
+  padding: 12px 28px;
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-ghost:hover {
+  color: #f1f5f9;
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .hero-stats {
   display: flex;
-  gap: 40px;
-  padding-top: 8px;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
 }
 
 .hero-stat {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .stat-number {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
-  color: var(--color-brand-dark);
+  color: #e2e8f0;
+  letter-spacing: -0.02em;
 }
 
 .stat-label {
   font-size: 13px;
-  color: var(--text-secondary);
-  margin-top: 2px;
+  color: #64748b;
 }
 
-/* Hero visual */
-.hero-visual {
-  flex: 1;
-  max-width: 520px;
-  position: relative;
-  display: none;
+.stat-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.hero-image {
-  width: 100%;
-  border-radius: var(--radius-xl);
-  object-fit: cover;
-  aspect-ratio: 3/2;
-  box-shadow: var(--shadow-green);
-}
-
-.hero-visual-glow {
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(67, 160, 71, 0.12) 0%, transparent 70%);
-  border-radius: 50%;
-  z-index: -1;
-  pointer-events: none;
-}
-
-/* Categories */
-.category-section {
-  margin-bottom: 32px;
-}
-
-.section-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 14px;
-  color: var(--text-primary);
-}
-
-.category-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.category-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 18px;
-  background: var(--bg-card);
-  border-radius: 24px;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid var(--border-color);
-  font-size: 14px;
-  color: var(--text-regular);
-}
-
-.category-item:hover {
-  border-color: var(--color-brand);
-  color: var(--color-brand);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-green);
-}
-
-.cat-icon {
-  font-size: 16px;
-}
-
-/* Products */
-.products-section {
-  margin-bottom: 40px;
+/* ===== Sections ===== */
+.section {
+  max-width: 1200px;
+  margin: 0 auto 48px;
+  padding: 0 20px;
 }
 
 .section-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.section-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ===== Category chips ===== */
+.category-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-regular);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.category-chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.chip-icon {
+  color: var(--color-primary);
+  opacity: 0.7;
+}
+
+/* ===== Loading skeletons ===== */
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.skeleton-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.skeleton-img {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.w-3\/4 { width: 75%; }
+.w-1\/2 { width: 50%; }
+.w-1\/3 { width: 33%; }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== Pagination ===== */
 .pagination-wrap {
   display: flex;
   justify-content: center;
-  margin-top: 32px;
-}
-
-.loading-state {
-  padding: 20px 0;
-}
-
-@media (min-width: 768px) {
-  .hero-visual {
-    display: block;
-  }
-}
-
-@media (max-width: 767px) {
-  .hero {
-    flex-direction: column;
-    padding: 32px 0 20px;
-    text-align: center;
-    min-height: auto;
-  }
-
-  .hero-headline {
-    font-size: 28px;
-  }
-
-  .hero-desc {
-    max-width: 100%;
-    font-size: 15px;
-  }
-
-  .hero-actions {
-    justify-content: center;
-  }
-
-  .hero-stats {
-    justify-content: center;
-    gap: 28px;
-  }
+  margin-top: 36px;
 }
 </style>

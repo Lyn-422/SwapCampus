@@ -54,7 +54,7 @@ function logout() {
       <div class="navbar-left">
         <el-tooltip content="回到首页" placement="bottom" :show-after="500">
           <el-menu-item index="/" class="brand">
-            <span class="brand-icon">&#127795;</span>
+            <span class="brand-mark">S</span>
             <span class="brand-text">SwapCampus</span>
           </el-menu-item>
         </el-tooltip>
@@ -149,9 +149,23 @@ function logout() {
   position: sticky;
   top: 0;
   z-index: 1000;
-  border-bottom: 1px solid var(--border-color);
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
+  background: rgba(15, 23, 42, 0.92) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.navbar :deep(.el-menu--horizontal) {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+.navbar :deep(.el-sub-menu__title) {
+  color: #cbd5e1 !important;
+}
+
+.navbar :deep(.el-sub-menu__title:hover) {
+  color: #f1f5f9 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
 }
 
 .navbar-inner {
@@ -160,7 +174,7 @@ function logout() {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  padding: 0 16px;
+  padding: 0 20px;
   height: 60px;
 }
 
@@ -171,43 +185,88 @@ function logout() {
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   border-bottom: none !important;
+  color: #fff !important;
 }
 
-.brand-icon {
-  font-size: 24px;
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .brand-text {
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 700;
-  background: linear-gradient(135deg, #43a047, #2e7d32);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #f1f5f9;
+  letter-spacing: -0.03em;
+}
+
+.navbar :deep(.el-menu-item.is-active) {
+  background: transparent !important;
+  color: #fff !important;
 }
 
 .navbar-center {
   flex: 1;
-  max-width: 480px;
-  margin: 0 24px;
+  max-width: 440px;
+  margin: 0 32px;
 }
 
 .search-input :deep(.el-input__wrapper) {
-  border-radius: 24px;
-  background: var(--bg-page);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+  transition: all 0.2s;
+}
+
+.search-input :deep(.el-input__wrapper:hover) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.search-input :deep(.el-input__wrapper.is-focus) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #6366f1;
+}
+
+.search-input :deep(.el-input__inner) {
+  color: #e2e8f0;
+}
+
+.search-input :deep(.el-input__inner::placeholder) {
+  color: #64748b;
+}
+
+.search-input :deep(.el-input__prefix) {
+  color: #64748b;
 }
 
 .navbar-right {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
 }
 
-.navbar-right .el-menu-item {
+.navbar-right :deep(.el-menu-item) {
   border-bottom: none !important;
+  color: #cbd5e1 !important;
+}
+
+.navbar-right :deep(.el-menu-item:hover) {
+  color: #f1f5f9 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
 }
 
 .publish-btn {
@@ -222,24 +281,26 @@ function logout() {
   max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #cbd5e1;
 }
 
 .nav-auth-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .btn-login {
-  color: var(--color-brand-dark);
-  border-color: var(--color-brand);
+  color: #cbd5e1;
+  border-color: rgba(255, 255, 255, 0.2);
   font-weight: 500;
+  background: transparent;
 }
 
 .btn-login:hover {
   color: #fff;
-  background: var(--color-brand);
-  border-color: var(--color-brand);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .unread-badge {
