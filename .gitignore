@@ -12,9 +12,15 @@ venv/
 env/
 
 # Django
-backend/media/uploads/*
+backend/media/*
 !backend/media/.gitkeep
 backend/static/collected/
+
+# 临时文件和截图
+bug图片/
+*.tmp
+.temp/
+tmp/
 *.log
 db.sqlite3
 
