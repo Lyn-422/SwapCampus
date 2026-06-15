@@ -4,6 +4,11 @@ import { useAuthStore } from '@/stores/auth'
 import { useProductsStore } from '@/stores/products'
 import ProductCard from '@/components/product/ProductCard.vue'
 
+import img1 from '@/assets/472bf1070660183e5bc06a46de7a1df4.jpg'
+import img2 from '@/assets/98c8b67e6d67ff246ee36050330837a0.jpg'
+import img3 from '@/assets/9e4433ded35df41857ec545286d22f6d.jpg'
+import img4 from '@/assets/f0e7b221e5ca73befa72315b4ddcaff5.jpg'
+
 const auth = useAuthStore()
 const productsStore = useProductsStore()
 const currentPage = ref(1)
@@ -11,10 +16,10 @@ const pageSize = 20
 const productsRef = ref(null)
 
 const carouselSlides = [
-  { src: '/carousel/472bf1070660183e5bc06a46de7a1df4.jpg', alt: '校园风景 1' },
-  { src: '/carousel/98c8b67e6d67ff246ee36050330837a0.jpg', alt: '校园风景 2' },
-  { src: '/carousel/9e4433ded35df41857ec545286d22f6d.jpg', alt: '校园风景 3' },
-  { src: '/carousel/f0e7b221e5ca73befa72315b4ddcaff5.jpg', alt: '校园风景 4' },
+  { src: img1, alt: '校园风景 1' },
+  { src: img2, alt: '校园风景 2' },
+  { src: img3, alt: '校园风景 3' },
+  { src: img4, alt: '校园风景 4' },
 ]
 
 const currentSlide = ref(0)
@@ -37,6 +42,7 @@ function goSlide(index) {
 }
 
 function startCarousel() {
+  stopCarousel()
   carouselTimer = setInterval(nextSlide, 4000)
 }
 
@@ -76,93 +82,98 @@ onUnmounted(() => {
 
 <template>
   <div class="home">
-    <!-- Hero -->
+    <!-- Hero + Carousel -->
     <section class="hero">
       <div class="hero-bg">
         <div class="hero-blob hero-blob--1"></div>
         <div class="hero-blob hero-blob--2"></div>
         <div class="hero-blob hero-blob--3"></div>
       </div>
-      <div class="hero-content">
-        <div class="hero-badge">
-          <span class="badge-dot"></span>
-          Beijing Forestry University
-        </div>
-        <h1 class="hero-title">
-          闲置有<span class="highlight">新</span>生，<br/>校园有<span class="highlight">信</span>任
-        </h1>
-        <p class="hero-desc">
-          北京林业大学专属 C2C 二手交易平台。学号实名认证与面交担保机制，让校园闲置流转更安全、更放心。
-        </p>
-        <div class="hero-actions">
-          <template v-if="auth.isLoggedIn">
-            <button class="btn-primary" @click="$router.push('/publish')">
-              发布商品
-              <span class="btn-arrow">-></span>
-            </button>
-            <button class="btn-ghost" @click="productsRef?.scrollIntoView({ behavior: 'smooth' })">
-              浏览商品
-            </button>
-          </template>
-          <template v-else>
-            <button class="btn-primary" @click="$router.push('/register')">
-              立即注册
-              <span class="btn-arrow">-></span>
-            </button>
-            <button class="btn-ghost" @click="productsRef?.scrollIntoView({ behavior: 'smooth' })">
-              先看看
-            </button>
-          </template>
-        </div>
-        <div class="hero-stats">
-          <div class="hero-stat">
-            <span class="stat-number">{{ productsStore.total || 0 }}</span>
-            <span class="stat-label">在售好物</span>
+
+      <div class="hero-inner">
+        <!-- Left: text -->
+        <div class="hero-text">
+          <div class="hero-badge">
+            <span class="badge-dot"></span>
+            Beijing Forestry University
           </div>
-          <div class="stat-divider"></div>
-          <div class="hero-stat">
-            <span class="stat-number">100%</span>
-            <span class="stat-label">实名认证</span>
+          <h1 class="hero-title">
+            闲置有<span class="highlight">新</span>生，<br/>校园有<span class="highlight">信</span>任
+          </h1>
+          <p class="hero-desc">
+            北京林业大学专属 C2C 二手交易平台。学号实名认证与面交担保机制，让校园闲置流转更安全、更放心。
+          </p>
+          <div class="hero-actions">
+            <template v-if="auth.isLoggedIn">
+              <button class="btn-primary" @click="$router.push('/publish')">
+                发布商品
+                <span class="btn-arrow">-></span>
+              </button>
+              <button class="btn-ghost" @click="productsRef?.scrollIntoView({ behavior: 'smooth' })">
+                浏览商品
+              </button>
+            </template>
+            <template v-else>
+              <button class="btn-primary" @click="$router.push('/register')">
+                立即注册
+                <span class="btn-arrow">-></span>
+              </button>
+              <button class="btn-ghost" @click="productsRef?.scrollIntoView({ behavior: 'smooth' })">
+                先看看
+              </button>
+            </template>
           </div>
-          <div class="stat-divider"></div>
-          <div class="hero-stat">
-            <span class="stat-number">面交</span>
-            <span class="stat-label">安全模式</span>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <span class="stat-number">{{ productsStore.total || 0 }}</span>
+              <span class="stat-label">在售好物</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="hero-stat">
+              <span class="stat-number">100%</span>
+              <span class="stat-label">实名认证</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="hero-stat">
+              <span class="stat-number">面交</span>
+              <span class="stat-label">安全模式</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: carousel -->
+        <div class="hero-carousel" @mouseenter="stopCarousel" @mouseleave="startCarousel">
+          <div class="carousel-track" :style="slideStyle">
+            <div
+              v-for="(slide, i) in carouselSlides"
+              :key="i"
+              class="carousel-slide"
+            >
+              <img :src="slide.src" :alt="slide.alt" class="carousel-img" />
+            </div>
+          </div>
+
+          <button class="carousel-arrow carousel-arrow--left" @click.stop="prevSlide">
+            <el-icon :size="18"><component :is="'ArrowLeft'" /></el-icon>
+          </button>
+          <button class="carousel-arrow carousel-arrow--right" @click.stop="nextSlide">
+            <el-icon :size="18"><component :is="'ArrowRight'" /></el-icon>
+          </button>
+
+          <div class="carousel-dots">
+            <button
+              v-for="(_, i) in carouselSlides"
+              :key="i"
+              class="carousel-dot"
+              :class="{ 'is-active': i === currentSlide }"
+              @click="goSlide(i)"
+            />
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- Carousel -->
-    <section class="carousel-section">
-      <div class="carousel-wrap" @mouseenter="stopCarousel" @mouseleave="startCarousel">
-        <div class="carousel-track" :style="slideStyle">
-          <div
-            v-for="(slide, i) in carouselSlides"
-            :key="i"
-            class="carousel-slide"
-          >
-            <img :src="slide.src" :alt="slide.alt" class="carousel-img" />
-          </div>
-        </div>
-
-        <button class="carousel-arrow carousel-arrow--left" @click="prevSlide">
-          <el-icon :size="20"><component :is="'ArrowLeft'" /></el-icon>
-        </button>
-        <button class="carousel-arrow carousel-arrow--right" @click="nextSlide">
-          <el-icon :size="20"><component :is="'ArrowRight'" /></el-icon>
-        </button>
-
-        <div class="carousel-dots">
-          <button
-            v-for="(_, i) in carouselSlides"
-            :key="i"
-            class="carousel-dot"
-            :class="{ 'is-active': i === currentSlide }"
-            @click="goSlide(i)"
-          />
-        </div>
-      </div>
+      <!-- gradient fade to white -->
+      <div class="hero-fade"></div>
     </section>
 
     <!-- Categories -->
@@ -239,9 +250,9 @@ onUnmounted(() => {
 /* ===== Hero ===== */
 .hero {
   position: relative;
-  padding: 72px 0 64px;
+  padding: 64px 0 0;
   overflow: hidden;
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 40%, #f8fafc 100%);
+  background: #0f172a;
 }
 
 .hero-bg {
@@ -255,42 +266,61 @@ onUnmounted(() => {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.3;
+  opacity: 0.25;
 }
 
 .hero-blob--1 {
   width: 500px;
   height: 500px;
-  top: -200px;
-  right: -100px;
+  top: -250px;
+  right: 10%;
   background: radial-gradient(circle, #6366f1, #8b5cf6);
 }
 
 .hero-blob--2 {
-  width: 400px;
-  height: 400px;
-  bottom: -100px;
-  left: -80px;
+  width: 350px;
+  height: 350px;
+  bottom: 60px;
+  left: -120px;
   background: radial-gradient(circle, #f43f5e, #ec4899);
 }
 
 .hero-blob--3 {
-  width: 300px;
-  height: 300px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  top: 40%;
+  right: 30%;
   background: radial-gradient(circle, #3b82f6, #6366f1);
-  opacity: 0.15;
+  opacity: 0.12;
 }
 
-.hero-content {
+.hero-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(180deg, transparent, #f8fafc);
+  pointer-events: none;
+}
+
+.hero-inner {
   position: relative;
   z-index: 1;
-  max-width: 700px;
+  max-width: 1200px;
   margin: 0 auto;
-  text-align: center;
-  padding: 0 20px;
+  padding: 0 20px 60px;
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+
+/* ── Hero text (left) ── */
+.hero-text {
+  flex: 1;
+  max-width: 520px;
+  min-width: 0;
+  padding-bottom: 48px;
 }
 
 .hero-badge {
@@ -304,7 +334,7 @@ onUnmounted(() => {
   color: #a5b4fc;
   font-size: 13px;
   font-weight: 500;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   letter-spacing: 0.02em;
 }
 
@@ -322,12 +352,12 @@ onUnmounted(() => {
 }
 
 .hero-title {
-  font-size: 52px;
+  font-size: 48px;
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.03em;
   color: #f1f5f9;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .highlight {
@@ -338,25 +368,24 @@ onUnmounted(() => {
 }
 
 .hero-desc {
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.7;
   color: #94a3b8;
-  max-width: 520px;
-  margin: 0 auto 36px;
+  max-width: 440px;
+  margin-bottom: 32px;
 }
 
 .hero-actions {
   display: flex;
   gap: 12px;
-  justify-content: center;
-  margin-bottom: 48px;
+  margin-bottom: 40px;
 }
 
 .btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 28px;
+  padding: 12px 26px;
   background: #6366f1;
   color: #fff;
   border: none;
@@ -385,7 +414,7 @@ onUnmounted(() => {
 }
 
 .btn-ghost {
-  padding: 12px 28px;
+  padding: 12px 26px;
   background: transparent;
   color: #cbd5e1;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -406,8 +435,7 @@ onUnmounted(() => {
 .hero-stats {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 32px;
+  gap: 28px;
 }
 
 .hero-stat {
@@ -434,20 +462,18 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* ===== Carousel ===== */
-.carousel-section {
-  max-width: 1200px;
-  margin: -16px auto 48px;
-  padding: 0 20px;
-}
-
-.carousel-wrap {
+/* ── Hero carousel (right) ── */
+.hero-carousel {
+  flex: 1;
+  max-width: 560px;
+  min-width: 320px;
   position: relative;
+  border-radius: 14px;
   overflow: hidden;
-  border-radius: var(--radius-xl);
-  aspect-ratio: 16 / 9;
-  background: #1e293b;
-  box-shadow: var(--shadow-lg);
+  aspect-ratio: 4 / 3;
+  background: rgba(30, 41, 59, 0.5);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.3);
+  z-index: 2;
 }
 
 .carousel-track {
@@ -472,12 +498,12 @@ onUnmounted(() => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
   color: #fff;
   display: flex;
   align-items: center;
@@ -487,7 +513,7 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-.carousel-wrap:hover .carousel-arrow {
+.hero-carousel:hover .carousel-arrow {
   opacity: 1;
 }
 
@@ -496,28 +522,28 @@ onUnmounted(() => {
 }
 
 .carousel-arrow--left {
-  left: 12px;
+  left: 10px;
 }
 
 .carousel-arrow--right {
-  right: 12px;
+  right: 10px;
 }
 
 .carousel-dots {
   position: absolute;
-  bottom: 14px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .carousel-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.35);
   cursor: pointer;
   transition: all 0.25s;
   padding: 0;
@@ -525,7 +551,7 @@ onUnmounted(() => {
 
 .carousel-dot.is-active {
   background: #fff;
-  width: 24px;
+  width: 22px;
   border-radius: 4px;
 }
 
@@ -641,5 +667,44 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   margin-top: 36px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .hero-inner {
+    flex-direction: column;
+    gap: 32px;
+    padding-bottom: 40px;
+  }
+
+  .hero-text {
+    text-align: center;
+    padding-bottom: 0;
+    max-width: 100%;
+  }
+
+  .hero-desc {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-actions {
+    justify-content: center;
+  }
+
+  .hero-stats {
+    justify-content: center;
+  }
+
+  .hero-title {
+    font-size: 36px;
+  }
+
+  .hero-carousel {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
 }
 </style>
