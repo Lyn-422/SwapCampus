@@ -1,8 +1,10 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
+
 const client = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE,
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 })
@@ -32,7 +34,7 @@ client.interceptors.response.use(
       const refreshToken = localStorage.getItem('refresh_token')
       if (refreshToken) {
         try {
-          const res = await axios.post('/api/users/token/refresh/', {
+          const res = await axios.post(`${API_BASE}/users/token/refresh/`, {
             refresh: refreshToken,
           })
           const newToken = res.data.data?.access || res.data.access
