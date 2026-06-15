@@ -62,7 +62,7 @@ async function handleLogin() {
   <div class="auth-page">
     <div class="auth-card">
       <div class="auth-header">
-        <span class="auth-icon">&#127795;</span>
+        <span class="auth-icon">S</span>
         <h1>SwapCampus</h1>
         <p>校园闲置物品交易平台</p>
       </div>
@@ -123,7 +123,7 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 30%, #f1f8e9 70%, #fff9c4 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #f8fafc 70%, #eef2ff 100%);
   padding: 20px;
 }
 
@@ -142,7 +142,17 @@ async function handleLogin() {
 }
 
 .auth-icon {
-  font-size: 40px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
 }
 
 .auth-header h1 {
@@ -161,12 +171,13 @@ async function handleLogin() {
   width: 100%;
   height: 44px;
   font-size: 16px;
-  background: linear-gradient(135deg, #43a047, #2e7d32);
+  background: #6366f1;
   border: none;
 }
 
 .auth-submit-btn:hover {
-  background: linear-gradient(135deg, #388e3c, #1b5e20);
+  background: #4f46e5;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
 }
 
 .auth-footer {
@@ -176,7 +187,7 @@ async function handleLogin() {
 }
 
 .auth-footer a {
-  color: #43a047;
+  color: #6366f1;
   font-weight: 600;
 }
 </style>

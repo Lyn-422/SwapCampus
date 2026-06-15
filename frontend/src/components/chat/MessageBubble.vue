@@ -82,7 +82,7 @@ defineProps({
 }
 
 .message-mine .msg-content {
-  background: linear-gradient(135deg, #43a047, #66bb6a);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #fff;
 }
 

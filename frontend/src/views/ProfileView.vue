@@ -313,7 +313,7 @@ function cancelEdit() {
 
 .profile-cover {
   height: 140px;
-  background: linear-gradient(135deg, var(--color-brand) 0%, #66bb6a 40%, var(--color-brand-light) 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #eef2ff 100%);
 }
 
 .profile-body {

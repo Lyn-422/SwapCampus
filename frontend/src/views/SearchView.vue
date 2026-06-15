@@ -261,7 +261,7 @@ function clearFilters() {
 }
 
 .search-keyword strong {
-  color: #43a047;
+  color: #6366f1;
 }
 
 .pagination-wrap {

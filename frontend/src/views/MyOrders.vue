@@ -232,7 +232,10 @@ async function submitReview() {
               <span>{{ isBuyer(order) ? '卖家' : '买家' }}:
                 {{ isBuyer(order) ? order.seller?.nickname : order.buyer?.nickname }}
               </span>
-              <span v-if="order.meet_location">📍 {{ order.meet_location }}</span>
+              <span v-if="order.meet_location">
+                <el-icon :size="14"><component :is="'Location'" /></el-icon>
+                {{ order.meet_location }}
+              </span>
             </div>
             <div
               v-if="order.cancel_reason"
@@ -396,7 +399,7 @@ async function submitReview() {
 }
 
 .order-title:hover {
-  color: #43a047;
+  color: #6366f1;
 }
 
 .order-meta {
@@ -437,21 +440,21 @@ async function submitReview() {
   gap: 8px;
   margin-top: 8px;
   padding: 8px 14px;
-  background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-  border: 1px dashed #66bb6a;
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+  border: 1px dashed #818cf8;
   border-radius: 8px;
 }
 
 .face-code-label {
   font-size: 12px;
-  color: #2e7d32;
+  color: #4f46e5;
   font-weight: 500;
 }
 
 .face-code-value {
   font-size: 20px;
   font-weight: 800;
-  color: #1b5e20;
+  color: #3730a3;
   letter-spacing: 4px;
   font-family: 'Courier New', monospace;
   user-select: all;

@@ -203,11 +203,11 @@ onMounted(fetchDashboard)
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 }
-.stat-icon.users { background: #409eff; }
-.stat-icon.products { background: #43a047; }
-.stat-icon.pending { background: #e6a23c; }
-.stat-icon.orders { background: #e6a23c; }
-.stat-icon.reports { background: #f56c6c; }
+.stat-icon.users { background: #6366f1; }
+.stat-icon.products { background: #10b981; }
+.stat-icon.pending { background: #f59e0b; }
+.stat-icon.orders { background: #f59e0b; }
+.stat-icon.reports { background: #ef4444; }
 
 .stat-value {
   font-size: 28px;
