@@ -21,9 +21,33 @@ class RegisterSerializer(serializers.ModelSerializer):
     """
 
     password = serializers.CharField(
-        write_only=True, required=True, validators=[validate_password]
+        write_only=True, required=True
     )
     password_confirm = serializers.CharField(write_only=True, required=True)
+
+    def validate_password(self, value):
+        """自定义密码验证，提供更清晰的错误提示."""
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        from django.contrib.auth.password_validation import validate_password
+
+        try:
+            validate_password(value)
+        except DjangoValidationError as e:
+            # 将 Django 的错误消息转换为更友好的中文提示
+            error_messages = []
+            for msg in e.messages:
+                if "at least" in msg or "太短" in msg:
+                    error_messages.append("密码太短（至少 8 个字符）")
+                elif "numeric" in msg or "数字" in msg:
+                    error_messages.append("密码不能全为数字")
+                elif "common" in msg or "常见" in msg or "太常见" in msg:
+                    error_messages.append("密码太简单（如 12345678、password 等），请使用更复杂的密码")
+                elif "similar" in msg or "相似" in msg:
+                    error_messages.append("密码不能与学号过于相似")
+                else:
+                    error_messages.append(msg)
+            raise serializers.ValidationError(error_messages)
+        return value
 
     class Meta:
         model = User

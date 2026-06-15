@@ -114,6 +114,12 @@ class Product(BaseModel):
     tags = models.ManyToManyField(Tag, blank=True, verbose_name="标签")
     campus = models.CharField(max_length=30, blank=True, verbose_name="所在校区")
     view_count = models.PositiveIntegerField(default=0, verbose_name="浏览次数")
+    reject_reason = models.CharField(
+        max_length=300,
+        blank=True,
+        verbose_name="驳回原因",
+        help_text="审核驳回时填写的原因",
+    )
 
     class Meta:
         db_table = "products"
@@ -261,3 +267,56 @@ class Report(BaseModel):
 
     def __str__(self) -> str:
         return f"举报 {self.product.title} — {self.get_reason_display()}"
+
+
+class Comment(BaseModel):
+    """商品评论/留言.
+
+    支持一级评论和楼中楼回复（threaded）。
+    商品未售出时显示为留言板，已售出后仍可查看。
+    """
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="所属商品",
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="product_comments",
+        verbose_name="评论者",
+    )
+    content = models.TextField(
+        max_length=1000,
+        verbose_name="评论内容",
+    )
+    image = models.ImageField(
+        upload_to="comment_images/%Y/%m/",
+        null=True,
+        blank=True,
+        verbose_name="评论图片",
+    )
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="replies",
+        verbose_name="回复对象",
+        help_text="为空表示一级评论，有值表示回复",
+    )
+
+    class Meta:
+        db_table = "comments"
+        verbose_name = "商品评论"
+        verbose_name_plural = verbose_name
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["product", "-created_at"]),
+            models.Index(fields=["parent", "-created_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.author.get_display_name()} 评论 {self.product.title}"

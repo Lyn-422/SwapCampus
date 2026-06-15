@@ -71,6 +71,13 @@ class User(AbstractUser):
         verbose_name_plural = verbose_name
         ordering = ["-date_joined"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # 修改 username 字段的错误消息，将 "username" 改为 "学号"
+        self._meta.get_field('username').error_messages = {
+            'unique': '该学号已注册',
+        }
+
     def __str__(self) -> str:
         return f"{self.get_display_name()} ({self.username})"
 

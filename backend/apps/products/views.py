@@ -8,9 +8,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticate
 from rest_framework.response import Response
 
 from apps.products.filters import ProductFilter
-from apps.products.models import Category, Favorite, Product, Report, Tag
+from apps.products.models import Category, Comment, Favorite, Product, Report, Tag
 from apps.products.serializers import (
     CategorySerializer,
+    CommentCreateSerializer,
+    CommentSerializer,
     FavoriteCreateSerializer,
     FavoriteSerializer,
     ProductCreateSerializer,
@@ -336,3 +338,100 @@ class ReportViewSet(
             build_success_response(output.data),
             status=status.HTTP_201_CREATED,
         )
+
+
+class CommentViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """商品评论 ViewSet.
+
+    - GET    /api/products/comments/?product_id=xxx  → 商品评论列表
+    - POST   /api/products/comments/                  → 发表评论
+    - DELETE /api/products/comments/{id}/             → 删除评论（作者或卖家）
+    """
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    lookup_field = "id"
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CommentCreateSerializer
+        return CommentSerializer
+
+    def get_queryset(self):
+        qs = Comment.objects.select_related("author", "product", "product__seller")
+        product_id = self.request.query_params.get("product_id")
+        if product_id:
+            qs = qs.filter(product_id=product_id, parent__isnull=True)  # 只返回一级评论
+        else:
+            qs = qs.filter(parent__isnull=True)
+        return qs.order_by("-created_at")
+
+    def create(self, request, *args, **kwargs):
+        serializer = CommentCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        product_id = serializer.validated_data["product_id"]
+        content = serializer.validated_data["content"]
+        parent_id = serializer.validated_data.get("parent_id")
+        image = serializer.validated_data.get("image")
+
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response(
+                {"success": False, "error": {"message": "商品不存在"}},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # 检查是否允许评论（未售出的商品可以评论）
+        if product.status == Product.Status.SOLD:
+            return Response(
+                {"success": False, "error": {"message": "商品已售出，无法评论"}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 检查 parent 是否合法
+        parent = None
+        if parent_id:
+            try:
+                parent = Comment.objects.get(id=parent_id, product=product)
+            except Comment.DoesNotExist:
+                return Response(
+                    {"success": False, "error": {"message": "回复的评论不存在"}},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            # 限制回复层级：只能回复一级评论，不能回复回复
+            if parent.parent is not None:
+                return Response(
+                    {"success": False, "error": {"message": "只能回复一级评论"}},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        comment = Comment.objects.create(
+            product=product,
+            author=request.user,
+            content=content,
+            parent=parent,
+            image=image,
+        )
+
+        output = CommentSerializer(comment, context={"request": request})
+        return Response(
+            build_success_response(output.data),
+            status=status.HTTP_201_CREATED,
+        )
+
+    def check_object_permissions(self, request, obj):
+        """仅作者或卖家可删除评论."""
+        if obj.author != request.user and obj.product.seller != request.user:
+            self.permission_denied(request)
+
+    def destroy(self, request, *args, **kwargs):
+        comment = self.get_object()
+        self.check_object_permissions(request, comment)
+        comment.delete()
+        return Response(build_success_response({"deleted": True}))

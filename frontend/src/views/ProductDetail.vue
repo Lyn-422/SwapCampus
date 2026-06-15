@@ -10,6 +10,7 @@ import { createConversation } from '@/api/chat'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import CreditBadge from '@/components/user/CreditBadge.vue'
 import ProductCard from '@/components/product/ProductCard.vue'
+import ProductComments from '@/components/product/ProductComments.vue'
 import {
   formatPrice, formatTime, formatDateTime,
   conditionLabels, conditionColors,
@@ -373,8 +374,16 @@ function isSeller() {
         </div>
       </section>
 
-      <!-- Reviews -->
-      <section class="detail-reviews">
+      <!-- 评论/评价区域 -->
+      <ProductComments
+        v-if="product.status !== 'sold'"
+        :product-id="product.id"
+        :product-status="product.status"
+        :is-seller="auth.user?.id === product.seller?.id"
+      />
+
+      <!-- 交易评价（仅已售出显示） -->
+      <section v-else class="detail-reviews">
         <h3>交易评价</h3>
         <div v-if="product.reviews?.length" class="reviews-list">
           <div v-for="review in product.reviews" :key="review.id" class="review-item">

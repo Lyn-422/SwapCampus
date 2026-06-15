@@ -175,12 +175,39 @@ class AdminProductApproveView(APIView):
                 related_product=product,
             )
         elif action == "hide":
+            reject_type = request.data.get("reject_type", "")
+            reason = request.data.get("reason", "")
+
+            # 驳回类型映射
+            type_labels = {
+                "human_trafficking": "贩卖人口",
+                "prohibited_items": "违规物品",
+                "unclear_images": "图片不清晰",
+                "unfair_price": "价格虚高",
+                "false_description": "描述不实",
+                "other": "其他",
+            }
+
+            type_text = type_labels.get(reject_type, "其他")
+
+            # 保存驳回原因到商品
+            reject_reason_text = f"驳回类型：{type_text}"
+            if reason:
+                reject_reason_text += f" | 详细说明：{reason}"
+            product.reject_reason = reject_reason_text
+            product.save(update_fields=["reject_reason", "updated_at"])
+
+            # 执行驳回
             reject_product(product)
+
+            content = f"你的商品「{product.title}」未通过审核，已被驳回。"
+            content += f"\n{reject_reason_text}"
+
             create_notification(
                 recipient=product.seller,
                 ntype="system",
                 title="商品审核未通过",
-                content=f"你的商品「{product.title}」未通过审核，已被驳回。",
+                content=content,
                 related_product=product,
             )
         else:

@@ -8,6 +8,7 @@ import {
 } from '@/api/transactions'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Warning } from '@element-plus/icons-vue'
 import Rating from '@/components/common/Rating.vue'
 import {
   formatPrice, formatTime, formatDateTime,
@@ -107,7 +108,10 @@ async function handleGenerateCode(order) {
     const data = res.data.data || res.data
     order.face_confirm_code = data.confirm_code
     order.status = 'face_confirm'
-  } catch {}
+    ElMessage.success('确认码已获取，请勿泄露给非交易方')
+  } catch (err) {
+    ElMessage.error(err.response?.data?.error?.message || '获取失败')
+  }
 }
 
 async function handleVerifyCode(order) {
@@ -117,8 +121,12 @@ async function handleVerifyCode(order) {
       inputErrorMessage: '请输入 6 位数字确认码',
     })
     await verifyConfirmCode(order.id, { code: value })
-    ElMessage.success('验证成功')
-    loadOrders()
+    ElMessage.success('验证成功，交易已完成')
+    // 自动切换到"已完成"标签页，方便查看
+    if (activeTab.value !== 'all') {
+      activeTab.value = 'completed'
+    }
+    await loadOrders()
   } catch {}
 }
 
@@ -272,15 +280,21 @@ async function submitReview() {
             >
               <span class="face-code-label">面交确认码</span>
               <span class="face-code-value" :class="{ 'code-used': order.status === 'completed' }">{{ order.face_confirm_code }}</span>
-              <el-button
-                v-if="order.status === 'face_confirm'"
-                size="small"
-                text
-                type="primary"
-                @click="handleGenerateCode(order)"
-              >
-                重新生成
-              </el-button>
+              <el-tooltip content="刷新页面后需重新获取" placement="top">
+                <el-button
+                  v-if="order.status === 'face_confirm'"
+                  size="small"
+                  text
+                  type="primary"
+                  @click="handleGenerateCode(order)"
+                >
+                  获取确认码
+                </el-button>
+              </el-tooltip>
+              <el-tag v-if="order.status === 'face_confirm'" type="danger" size="small" effect="plain" style="margin-left: 8px;">
+                <el-icon><Warning /></el-icon>
+                请勿泄露
+              </el-tag>
             </div>
 
             <!-- Buyer: face_confirm, verify code -->

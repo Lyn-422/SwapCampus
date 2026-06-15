@@ -1,0 +1,1 @@
+- [SwapCampus 举报系统优化](swapcampus-report-system.md) — 完善了举报处理流程，支持扣分、封禁、自动通知

@@ -10,6 +10,7 @@ const auth = useAuthStore()
 
 const formRef = ref(null)
 const loading = ref(false)
+const showPasswordTips = ref(false)
 
 const form = reactive({
   username: '',
@@ -79,8 +80,10 @@ async function handleRegister() {
               <el-input
                 v-model="form.password"
                 type="password"
-                placeholder="至少 6 位"
+                placeholder="至少 8 位"
                 show-password
+                @focus="showPasswordTips = true"
+                @blur="showPasswordTips = false"
               />
             </el-form-item>
           </el-col>
@@ -95,6 +98,13 @@ async function handleRegister() {
             </el-form-item>
           </el-col>
         </el-row>
+
+        <!-- 密码要求提示 -->
+        <div v-if="showPasswordTips" class="password-tips">
+          <div class="tips-content">
+            <p>密码要求：至少8个字符，不能全为数字，不能过于简单</p>
+          </div>
+        </div>
 
         <el-form-item label="昵称（选填）" prop="nickname">
           <el-input v-model="form.nickname" placeholder="给自己起个名字" maxlength="50" />
@@ -193,5 +203,18 @@ async function handleRegister() {
 .auth-footer a {
   color: #43a047;
   font-weight: 600;
+}
+
+.password-tips {
+  padding: 8px 0;
+  margin-bottom: 8px;
+  color: #909399;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.tips-content p {
+  margin: 0;
+  line-height: 1.5;
 }
 </style>

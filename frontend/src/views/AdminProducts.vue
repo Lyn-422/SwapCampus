@@ -9,6 +9,24 @@ const products = ref([])
 const pagination = ref({ page: 1, page_size: 20, total: 0 })
 const filters = ref({ status: 'pending', search: '' })
 
+// 驳回弹窗相关
+const rejectDialogVisible = ref(false)
+const rejectForm = ref({
+  productId: '',
+  productTitle: '',
+  type: 'other',
+  reason: '',
+})
+
+const rejectTypes = [
+  { value: 'human_trafficking', label: '贩卖人口' },
+  { value: 'prohibited_items', label: '违规物品/违禁品' },
+  { value: 'unclear_images', label: '图片不清晰' },
+  { value: 'unfair_price', label: '价格虚高' },
+  { value: 'false_description', label: '描述不实' },
+  { value: 'other', label: '其他' },
+]
+
 const statusOptions = [
   { value: 'pending', label: '待审核' },
   { value: 'active', label: '在售' },
@@ -45,18 +63,55 @@ async function fetchProducts() {
   }
 }
 
+function openRejectDialog(product) {
+  rejectForm.value = {
+    productId: product.id,
+    productTitle: product.title,
+    type: 'other',
+    reason: '',
+  }
+  rejectDialogVisible.value = true
+}
+
+async function submitReject() {
+  if (!rejectForm.value.type) {
+    ElMessage.warning('请选择驳回类型')
+    return
+  }
+  try {
+    await moderateProduct(
+      rejectForm.value.productId,
+      'hide',
+      rejectForm.value.reason.trim(),
+      rejectForm.value.type
+    )
+    ElMessage.success('驳回成功，已通知卖家')
+    rejectDialogVisible.value = false
+    fetchProducts()
+  } catch {
+    ElMessage.error('驳回失败')
+  }
+}
+
 async function handleModerate(product, action) {
   const labels = { approve: '审核通过', hide: '驳回' }
   const actionLabel = labels[action] || action
+
   try {
-    await ElMessageBox.confirm(
-      `确定要${actionLabel}商品「${product.title}」吗？`,
-      actionLabel,
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' },
-    )
-    await moderateProduct(product.id, action)
-    ElMessage.success(`${actionLabel}成功`)
-    fetchProducts()
+    if (action === 'hide') {
+      // 驳回使用弹窗
+      openRejectDialog(product)
+    } else {
+      // 通过直接确认
+      await ElMessageBox.confirm(
+        `确定要${actionLabel}商品「${product.title}」吗？`,
+        actionLabel,
+        { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+      )
+      await moderateProduct(product.id, action)
+      ElMessage.success(`${actionLabel}成功`)
+      fetchProducts()
+    }
   } catch {
     // 取消操作
   }
@@ -188,6 +243,41 @@ onMounted(fetchProducts)
         />
       </div>
     </el-card>
+
+    <!-- 驳回商品弹窗 -->
+    <el-dialog
+      v-model="rejectDialogVisible"
+      title="驳回商品"
+      width="450px"
+    >
+      <p style="margin-bottom: 16px;">确定要驳回商品「{{ rejectForm.productTitle }}」吗？</p>
+      <el-form label-position="top">
+        <el-form-item label="驳回类型：" required>
+          <el-select v-model="rejectForm.type" style="width: 100%;">
+            <el-option
+              v-for="item in rejectTypes"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="详细说明（可选）：">
+          <el-input
+            v-model="rejectForm.reason"
+            type="textarea"
+            :rows="3"
+            placeholder="补充说明驳回原因（选填）"
+            maxlength="200"
+            show-word-limit
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="rejectDialogVisible = false">取消</el-button>
+        <el-button type="danger" @click="submitReject">确定驳回</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

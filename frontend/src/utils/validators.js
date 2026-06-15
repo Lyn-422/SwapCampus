@@ -15,8 +15,8 @@ export const usernameRule = {
 
 export const passwordRule = {
   required: true,
-  min: 6,
-  message: '密码至少 6 个字符',
+  min: 8,
+  message: '密码至少 8 个字符',
   trigger: 'blur',
 }
 

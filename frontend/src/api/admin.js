@@ -10,8 +10,11 @@ export function getAdminProducts(params = {}) {
   return client.get('/admin/products/', { params })
 }
 
-export function moderateProduct(id, action) {
-  return client.post(`/admin/products/${id}/moderate/?action=${action}`)
+export function moderateProduct(id, action, reason = '', rejectType = 'other') {
+  return client.post(`/admin/products/${id}/moderate/?action=${action}`, {
+    reason,
+    reject_type: rejectType,
+  })
 }
 
 // 举报管理

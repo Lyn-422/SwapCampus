@@ -3,7 +3,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from apps.products.models import Category, Favorite, Product, ProductImage, Report, Tag
+from apps.products.models import Category, Comment, Favorite, Product, ProductImage, Report, Tag
 from core.utils import compress_image
 
 User = get_user_model()
@@ -81,6 +81,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "cover_image",
             "seller",
             "category",
+            "reject_reason",
             "created_at",
         ]
 
@@ -393,3 +394,82 @@ class ReportCreateSerializer(serializers.Serializer):
         ("other", "其他"),
     ])
     description = serializers.CharField(max_length=500, required=False, allow_blank=True, default="")
+
+
+# ═══════════════════════════════════════════════════════════
+# 评论
+# ═══════════════════════════════════════════════════════════
+class CommentSerializer(serializers.ModelSerializer):
+    """评论序列化器（含回复）."""
+
+    author_name = serializers.SerializerMethodField()
+    author_avatar = serializers.SerializerMethodField()
+    replies = serializers.SerializerMethodField()
+    is_seller = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = [
+            "id", "product", "author", "author_name", "author_avatar",
+            "content", "image", "parent", "replies", "is_seller",
+            "created_at",
+        ]
+        read_only_fields = ["id", "author", "created_at"]
+
+    def get_author_name(self, obj) -> str:
+        return obj.author.get_display_name()
+
+    def get_author_avatar(self, obj) -> str | None:
+        if obj.author.avatar:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.author.avatar.url)
+            return obj.author.avatar.url
+        return None
+
+    def get_is_seller(self, obj) -> bool:
+        return obj.author_id == obj.product.seller_id
+
+    def get_replies(self, obj) -> list:
+        # 只获取前3条回复，避免数据过大
+        replies = obj.replies.select_related("author", "product").order_by("created_at")[:3]
+        return CommentReplySerializer(replies, many=True, context=self.context).data
+
+
+class CommentReplySerializer(serializers.ModelSerializer):
+    """评论回复序列化器（精简）."""
+
+    author_name = serializers.SerializerMethodField()
+    author_avatar = serializers.SerializerMethodField()
+    is_seller = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = [
+            "id", "author", "author_name", "author_avatar",
+            "content", "image", "is_seller", "created_at",
+        ]
+        read_only_fields = fields
+
+    def get_author_name(self, obj) -> str:
+        return obj.author.get_display_name()
+
+    def get_author_avatar(self, obj) -> str | None:
+        if obj.author.avatar:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.author.avatar.url)
+            return obj.author.avatar.url
+        return None
+
+    def get_is_seller(self, obj) -> bool:
+        return obj.author_id == obj.product.seller_id
+
+
+class CommentCreateSerializer(serializers.Serializer):
+    """评论创建序列化器."""
+
+    product_id = serializers.UUIDField()
+    content = serializers.CharField(max_length=1000)
+    parent_id = serializers.UUIDField(required=False, allow_null=True)
+    image = serializers.ImageField(required=False, allow_null=True)

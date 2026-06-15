@@ -5,6 +5,7 @@ from rest_framework.routers import SimpleRouter
 
 from apps.products.views import (
     CategoryViewSet,
+    CommentViewSet,
     FavoriteViewSet,
     ProductViewSet,
     ReportViewSet,
@@ -21,6 +22,9 @@ favorite_router.register(r"favorites", FavoriteViewSet, basename="favorite")
 report_router = SimpleRouter()
 report_router.register(r"reports", ReportViewSet, basename="report")
 
+comment_router = SimpleRouter()
+comment_router.register(r"comments", CommentViewSet, basename="comment")
+
 product_router = SimpleRouter()
 product_router.register(r"", ProductViewSet, basename="product")
 
@@ -33,5 +37,6 @@ urlpatterns += (
     category_router.urls
     + favorite_router.urls
     + report_router.urls
+    + comment_router.urls
     + product_router.urls
 )

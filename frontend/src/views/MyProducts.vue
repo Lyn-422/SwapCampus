@@ -68,6 +68,19 @@ async function handleDelete(product) {
     products.value = products.value.filter(p => p.id !== product.id)
   } catch {}
 }
+
+function viewRejectReason(product) {
+  // 直接从商品对象读取驳回原因
+  const reason = product.reject_reason
+  if (reason) {
+    ElMessageBox.alert(reason, '驳回原因', {
+      confirmButtonText: '知道了',
+      type: 'warning',
+    })
+  } else {
+    ElMessage.info('暂无驳回原因记录')
+  }
+}
 </script>
 
 <template>
@@ -122,6 +135,15 @@ async function handleDelete(product) {
               @click="handleRelist(product)"
             >
               重新上架
+            </el-button>
+            <el-button
+              v-if="product.status === 'hidden'"
+              size="small"
+              type="warning"
+              plain
+              @click="viewRejectReason(product)"
+            >
+              查看驳回原因
             </el-button>
             <el-tag v-if="product.status === 'banned'" type="danger" size="small">违规下架</el-tag>
             <el-button

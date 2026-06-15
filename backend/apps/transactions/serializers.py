@@ -41,10 +41,10 @@ class OrderListSerializer(serializers.ModelSerializer):
         ]
 
     def get_face_confirm_code(self, obj) -> str | None:
-        fc = getattr(obj, "face_confirm", None)
-        if fc:
-            return fc.confirm_code
-        return None
+        try:
+            return obj.face_confirm.confirm_code
+        except FaceConfirm.DoesNotExist:
+            return None
 
     def get_cancel_by(self, obj) -> str | None:
         if obj.cancel_by:
