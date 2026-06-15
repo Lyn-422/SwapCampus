@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getProduct, getRelatedProducts } from '@/api/products'
@@ -38,24 +38,35 @@ const reportReasons = [
   { value: 'other', label: '其他' },
 ]
 
-onMounted(async () => {
+async function loadProduct() {
+  loading.value = true
+  const id = route.params.id
   try {
-    const res = await getProduct(route.params.id)
+    const res = await getProduct(id)
     product.value = res.data.data || res.data
   } catch {
     ElMessage.error('商品不存在')
     router.push('/')
+    return
   } finally {
     loading.value = false
   }
+  // Reset state for new product
+  activeImageIndex.value = 0
+  window.scrollTo({ top: 0, behavior: 'instant' })
   fetchRelated()
   checkFav()
-})
+}
+
+onMounted(loadProduct)
+watch(() => route.params.id, loadProduct)
 
 async function fetchRelated() {
   try {
     const res = await getRelatedProducts(route.params.id)
-    relatedProducts.value = (res.data.data || res.data)?.results || res.data.data || []
+    const payload = res.data.data || res.data
+    // related endpoint returns a plain array, list endpoints return {results: [...]}
+    relatedProducts.value = Array.isArray(payload) ? payload : (payload?.results || [])
   } catch {}
 }
 

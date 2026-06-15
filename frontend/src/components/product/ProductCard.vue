@@ -1,6 +1,9 @@
 <script setup>
-import { formatPrice, formatTime, conditionLabels, conditionColors } from '@/utils/format'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { addFavorite, removeFavorite, checkFavorite } from '@/api/favorites'
+import { formatPrice, formatTime, conditionLabels, conditionColors } from '@/utils/format'
 
 const props = defineProps({
   product: {
@@ -10,7 +13,49 @@ const props = defineProps({
 })
 
 const router = useRouter()
-defineEmits(['toggleFavorite'])
+const auth = useAuthStore()
+
+const isFav = ref(false)
+const favId = ref(null)
+const favLoading = ref(false)
+
+onMounted(async () => {
+  if (!auth.isLoggedIn) return
+  try {
+    const res = await checkFavorite(props.product.id)
+    const data = res.data.data || res.data
+    const results = data.results || data
+    if (Array.isArray(results) && results.length > 0) {
+      isFav.value = true
+      favId.value = results[0].id
+    }
+  } catch {}
+})
+
+async function toggleFav() {
+  if (!auth.isLoggedIn) {
+    router.push('/login')
+    return
+  }
+  if (favLoading.value) return
+  favLoading.value = true
+  try {
+    if (isFav.value) {
+      await removeFavorite(favId.value)
+      isFav.value = false
+      favId.value = null
+    } else {
+      const res = await addFavorite(props.product.id)
+      const item = res.data.data || res.data
+      isFav.value = true
+      favId.value = item.id
+    }
+  } catch {
+    // handled by interceptor
+  } finally {
+    favLoading.value = false
+  }
+}
 
 function goDetail() {
   router.push(`/product/${props.product.id}`)
@@ -43,10 +88,11 @@ function goDetail() {
 
       <button
         class="card-fav"
-        :class="{ 'is-active': product.is_favorited }"
-        @click.stop="$emit('toggleFavorite', product)"
+        :class="{ 'is-active': isFav }"
+        :disabled="favLoading"
+        @click.stop="toggleFav"
       >
-        <el-icon :size="14"><component :is="product.is_favorited ? 'StarFilled' : 'Star'" /></el-icon>
+        <el-icon :size="14"><component :is="isFav ? 'StarFilled' : 'Star'" /></el-icon>
       </button>
 
       <div v-if="product.status !== 'active'" class="card-overlay">

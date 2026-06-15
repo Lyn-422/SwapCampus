@@ -108,7 +108,16 @@ onMounted(fetchReports)
         </el-table-column>
         <el-table-column label="被举报商品" min-width="180">
           <template #default="{ row }">
-            <div class="product-title">{{ row.product?.title }}</div>
+            <el-button
+              v-if="row.product?.id"
+              link
+              type="primary"
+              class="product-link"
+              @click="$router.push(`/product/${row.product.id}`)"
+            >
+              {{ row.product?.title }}
+            </el-button>
+            <span v-else class="product-title">{{ row.product?.title || '-' }}</span>
           </template>
         </el-table-column>
         <el-table-column label="举报描述" min-width="180">
@@ -191,6 +200,11 @@ onMounted(fetchReports)
 
 .product-title {
   font-weight: 500;
+}
+
+.product-link {
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .desc-text {
