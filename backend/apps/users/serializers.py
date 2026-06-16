@@ -101,12 +101,13 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop("password")
         student_id_card = validated_data.pop("student_id_card", None)
+        # create_user 内部自动 set_password + save，密码哈希直接入库
         user = User.objects.create_user(
             **validated_data,
+            password=password,
             is_active=False,
             status=User.AccountStatus.PENDING,
         )
-        user.set_password(password)
         if student_id_card:
             user.student_id_card = student_id_card
             user.save(update_fields=["student_id_card"])
